@@ -1,25 +1,41 @@
-#include <list>
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include "tokens.h"
 #include "lex.yy.h"
+#include "asembler.h"
 
 using namespace std;
 
-int main(){
-  vector<Token> tokens;
+int main(int argc, char** argv){
 
-  ifstream file("example.txt");
+  ifstream file("example0.txt");
 
   Lexer lexer(file);
+  vector<Token> tokens;
   Token token;
+
+  int lineCounter = 1;
+  bool parsingError = false;
 
   token = lexer.lex();
   while(token.getType() != TokenType::END_FILE){
-      tokens.push_back(token);
-      //cout << "Token " << token.getType() << " " << token.getText() << endl;
+    // cout << "Token " << token.getType() << " " << token.getText() << endl;
+    tokens.push_back(token);
+    if(token.getType() == TokenType::EOL) lineCounter++;
+    if(token.getType() == TokenType::ERROR){
+      cout << "GRESKA PRI PARSIRANJU NA LINIJI " << lineCounter << endl;
+      parsingError = true;
+      break;
+    }
+    token = lexer.lex();
+  }
 
-      token = lexer.lex();
+  if(!parsingError) {
+    Asembler as = Asembler(tokens);
+    cout << "dosli do prvog prolaza" << endl;
+    as.firstPass();
+    cout << "zavrsili prvi prolaz" << endl;
   }
 
 }

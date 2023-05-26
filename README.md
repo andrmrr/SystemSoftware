@@ -1,2 +1,0 @@
-# Sistemski-Softver
-Nista jos

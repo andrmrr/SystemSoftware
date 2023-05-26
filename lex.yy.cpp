@@ -92,7 +92,7 @@ class Lexer : public reflex::AbstractLexer<reflex::Matcher> {
 
 Token Lexer::lex(void)
 {
-  static const char *REGEX_INITIAL = "(?m)((?:\\Q#\\E))|([\\x09\\x0d\\x20])|((?:\\Q.\\E))|((?:\\Qhalt\\E))|((?:\\Qint\\E))|((?:\\Qiret\\E))|((?:\\Qcall\\E))|((?:\\Qret\\E))|((?:\\Qjmp\\E))|((?:\\Qbeq\\E))|((?:\\Qbne\\E))|((?:\\Qbgt\\E))|((?:\\Qpush\\E))|((?:\\Qpop\\E))|((?:\\Qxchg\\E))|((?:\\Qadd\\E))|((?:\\Qsub\\E))|((?:\\Qmul\\E))|((?:\\Qdiv\\E))|((?:\\Qnot\\E))|((?:\\Qand\\E))|((?:\\Qor\\E))|((?:\\Qxor\\E))|((?:\\Qshl\\E))|((?:\\Qshr\\E))|((?:\\Qld\\E))|((?:\\Qst\\E))|((?:\\Qcsrrd\\E))|((?:\\Qcsrwr\\E))|((?:[A-Za-z])(?:(?:[A-Za-z])|(?:[0-9])|_)*)|((?:\\Q$\\E)(?:[A-Za-z])(?:(?:[A-Za-z])|(?:[0-9]))*)|(0x(?:[0-9A-Fa-f])+)|((?:[0-9])+)|((?:\\Q$\\E)0x(?:[0-9A-Fa-f])+)|((?:\\Q$\\E)(?:[0-9])+)|((?:\\Q%\\E)r(?:[0-9]){1,2})|((?:\\Q%\\E)sp)|((?:\\Q%\\E)pc)|((?:\\Q[\\E))|((?:\\Q]\\E))|((?:\\Q,\\E))|((?:\\Q:\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q\"\\E))|(\\n)";
+  static const char *REGEX_INITIAL = "(?m)((?:\\Q#\\E))|([\\x09\\x0d\\x20])|((?:\\Q.\\E))|((?:\\Qhalt\\E))|((?:\\Qint\\E))|((?:\\Qiret\\E))|((?:\\Qcall\\E))|((?:\\Qret\\E))|((?:\\Qjmp\\E))|((?:\\Qbeq\\E))|((?:\\Qbne\\E))|((?:\\Qbgt\\E))|((?:\\Qpush\\E))|((?:\\Qpop\\E))|((?:\\Qxchg\\E))|((?:\\Qadd\\E))|((?:\\Qsub\\E))|((?:\\Qmul\\E))|((?:\\Qdiv\\E))|((?:\\Qnot\\E))|((?:\\Qand\\E))|((?:\\Qor\\E))|((?:\\Qxor\\E))|((?:\\Qshl\\E))|((?:\\Qshr\\E))|((?:\\Qld\\E))|((?:\\Qst\\E))|((?:\\Qcsrrd\\E))|((?:\\Qcsrwr\\E))|((?:[A-Za-z])(?:(?:[A-Za-z])|(?:[0-9])|_)*)|((?:\\Q$\\E)(?:[A-Za-z])(?:(?:[A-Za-z])|(?:[0-9]))*)|(0x(?:[0-9A-Fa-f])+)|((?:[0-9])+)|((?:\\Q$\\E)0x(?:[0-9A-Fa-f])+)|((?:\\Q$\\E)(?:[0-9])+)|((?:\\Q%\\E)r(?:[0-9]){1,2})|((?:\\Q%\\E)sp)|((?:\\Q%\\E)pc)|((?:\\Q[\\E))|((?:\\Q]\\E))|((?:\\Q,\\E))|((?:\\Q:\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q\"\\E))|(\\n)|(.)";
   static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
   static const char *REGEX_COMMENT = "(?m)(.)|(\\n)";
   static const reflex::Pattern PATTERN_COMMENT(REGEX_COMMENT);
@@ -140,103 +140,103 @@ Token Lexer::lex(void)
             break;
           case 5: // rule reflex.l:45: "int" :
 #line 45 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::INT, str());}
             break;
           case 6: // rule reflex.l:46: "iret" :
 #line 46 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::IRET, str());}
             break;
           case 7: // rule reflex.l:47: "call" :
 #line 47 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::CALL, str());}
             break;
           case 8: // rule reflex.l:48: "ret" :
 #line 48 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::RET, str());}
             break;
           case 9: // rule reflex.l:49: "jmp" :
 #line 49 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::JMP, str());}
             break;
           case 10: // rule reflex.l:50: "beq" :
 #line 50 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::BEQ, str());}
             break;
           case 11: // rule reflex.l:51: "bne" :
 #line 51 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::BNE, str());}
             break;
           case 12: // rule reflex.l:52: "bgt" :
 #line 52 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::BGT, str());}
             break;
           case 13: // rule reflex.l:53: "push" :
 #line 53 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::PUSH, str());}
             break;
           case 14: // rule reflex.l:54: "pop" :
 #line 54 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::POP, str());}
             break;
           case 15: // rule reflex.l:55: "xchg" :
 #line 55 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::XCHG, str());}
             break;
           case 16: // rule reflex.l:56: "add" :
 #line 56 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::ADD, str());}
             break;
           case 17: // rule reflex.l:57: "sub" :
 #line 57 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::SUB, str());}
             break;
           case 18: // rule reflex.l:58: "mul" :
 #line 58 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::MUL, str());}
             break;
           case 19: // rule reflex.l:59: "div" :
 #line 59 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::DIV, str());}
             break;
           case 20: // rule reflex.l:60: "not" :
 #line 60 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::NOT, str());}
             break;
           case 21: // rule reflex.l:61: "and" :
 #line 61 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::AND, str());}
             break;
           case 22: // rule reflex.l:62: "or" :
 #line 62 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::OR, str());}
             break;
           case 23: // rule reflex.l:63: "xor" :
 #line 63 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::XOR, str());}
             break;
           case 24: // rule reflex.l:64: "shl" :
 #line 64 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::SHL, str());}
             break;
           case 25: // rule reflex.l:65: "shr" :
 #line 65 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::SHR, str());}
             break;
           case 26: // rule reflex.l:66: "ld" :
 #line 66 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::LD, str());}
             break;
           case 27: // rule reflex.l:67: "st" :
 #line 67 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::ST, str());}
             break;
           case 28: // rule reflex.l:68: "csrrd" :
 #line 68 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::CSRRD, str());}
             break;
           case 29: // rule reflex.l:69: "csrwr" :
 #line 69 "reflex.l"
-{return Token(TokenType::GLOBAL, str());}
+{return Token(TokenType::CSRWR, str());}
 
 
             break;
@@ -308,7 +308,10 @@ Token Lexer::lex(void)
 #line 88 "reflex.l"
 {return Token(TokenType::EOL, str());}
 
-
+            break;
+          case 47: // rule reflex.l:90: . :
+#line 90 "reflex.l"
+{return Token(TokenType::ERROR, str());}
 
 
             break;

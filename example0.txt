@@ -1,0 +1,9 @@
+jmp 0x78ff8a
+halt
+call 4343434
+jmp zezanje
+int
+ret #nista ovo
+halt
+call neznam
+ret

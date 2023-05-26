@@ -1,5 +1,11 @@
 #include "tokens.h"
 
+bool Token::isBranchOperand(TokenType tokenType){
+  if(tokenType == TokenType::DEC || tokenType == TokenType::HEX || tokenType == TokenType::IDENT)
+    return true;
+  return false;
+}
+
 ostream& operator<<(std::ostream& out, const TokenType tokenType) {
   switch(tokenType) {
     case TokenType::HALT: out << "HALT"; break;

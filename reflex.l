@@ -42,31 +42,31 @@ letter [a-zA-Z]
 
 
 "halt"                                  {return Token(TokenType::HALT, str());}
-"int"                                   {return Token(TokenType::GLOBAL, str());}
-"iret"                                  {return Token(TokenType::GLOBAL, str());}
-"call"                                  {return Token(TokenType::GLOBAL, str());}
-"ret"                                   {return Token(TokenType::GLOBAL, str());}
-"jmp"                                   {return Token(TokenType::GLOBAL, str());}
-"beq"                                   {return Token(TokenType::GLOBAL, str());}
-"bne"                                   {return Token(TokenType::GLOBAL, str());}
-"bgt"                                   {return Token(TokenType::GLOBAL, str());}
-"push"                                  {return Token(TokenType::GLOBAL, str());}
-"pop"                                   {return Token(TokenType::GLOBAL, str());}
-"xchg"                                  {return Token(TokenType::GLOBAL, str());}
-"add"                                   {return Token(TokenType::GLOBAL, str());}
-"sub"                                   {return Token(TokenType::GLOBAL, str());}
-"mul"                                   {return Token(TokenType::GLOBAL, str());}
-"div"                                   {return Token(TokenType::GLOBAL, str());}
-"not"                                   {return Token(TokenType::GLOBAL, str());}
-"and"                                   {return Token(TokenType::GLOBAL, str());}
-"or"                                    {return Token(TokenType::GLOBAL, str());}
-"xor"                                   {return Token(TokenType::GLOBAL, str());}
-"shl"                                   {return Token(TokenType::GLOBAL, str());}
-"shr"                                   {return Token(TokenType::GLOBAL, str());}
-"ld"                                    {return Token(TokenType::GLOBAL, str());}
-"st"                                    {return Token(TokenType::GLOBAL, str());}
-"csrrd"                                 {return Token(TokenType::GLOBAL, str());}
-"csrwr"                                 {return Token(TokenType::GLOBAL, str());}
+"int"                                   {return Token(TokenType::INT, str());}
+"iret"                                  {return Token(TokenType::IRET, str());}
+"call"                                  {return Token(TokenType::CALL, str());}
+"ret"                                   {return Token(TokenType::RET, str());}
+"jmp"                                   {return Token(TokenType::JMP, str());}
+"beq"                                   {return Token(TokenType::BEQ, str());}
+"bne"                                   {return Token(TokenType::BNE, str());}
+"bgt"                                   {return Token(TokenType::BGT, str());}
+"push"                                  {return Token(TokenType::PUSH, str());}
+"pop"                                   {return Token(TokenType::POP, str());}
+"xchg"                                  {return Token(TokenType::XCHG, str());}
+"add"                                   {return Token(TokenType::ADD, str());}
+"sub"                                   {return Token(TokenType::SUB, str());}
+"mul"                                   {return Token(TokenType::MUL, str());}
+"div"                                   {return Token(TokenType::DIV, str());}
+"not"                                   {return Token(TokenType::NOT, str());}
+"and"                                   {return Token(TokenType::AND, str());}
+"or"                                    {return Token(TokenType::OR, str());}
+"xor"                                   {return Token(TokenType::XOR, str());}
+"shl"                                   {return Token(TokenType::SHL, str());}
+"shr"                                   {return Token(TokenType::SHR, str());}
+"ld"                                    {return Token(TokenType::LD, str());}
+"st"                                    {return Token(TokenType::ST, str());}
+"csrrd"                                 {return Token(TokenType::CSRRD, str());}
+"csrwr"                                 {return Token(TokenType::CSRWR, str());}
 
 
 {letter}({letter}|{digit}|_)*           {return Token(TokenType::IDENT, str());}
@@ -87,7 +87,7 @@ letter [a-zA-Z]
 "\""                                    {return Token(TokenType::DBL_QUOTES, str());}
 \n                                      {return Token(TokenType::EOL, str());}
 
-
+.                                      {return Token(TokenType::ERROR, str());}
 
 
 %%

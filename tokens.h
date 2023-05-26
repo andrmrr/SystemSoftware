@@ -12,7 +12,7 @@ enum class TokenType {
   DEC, HEX, LIT_DEC, LIT_HEX,
   REG,
   COMMA, COLON, PLUS, MINUS, BR_OPEN, BR_CLOSE, DBL_QUOTES,
-  EOL, END_FILE, NONE
+  EOL, END_FILE, NONE, ERROR
 };
 
 ostream& operator<<(std::ostream& out, const TokenType tokenType);
@@ -25,4 +25,5 @@ public:
   Token(TokenType tt = TokenType::END_FILE, string tx = "") : type(tt), text(tx) {}
   TokenType getType() const { return type; }
   string getText() const { return text; }
+  static bool isBranchOperand(TokenType tokenType);
 };

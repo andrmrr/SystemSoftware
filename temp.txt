@@ -1,60 +1,38 @@
-#include "asembler.h"
-#include <iostream>
-using namespace std;
-
-Asembler::Asembler(vector<Token> tl){
-  lcounter = 0;
-  tokens = tl;
-}
-
-int const Asembler::getCounter(){
-  return lcounter;
-}
-
-void Asembler::incCounter(int inc){
-  lcounter += inc;
-}
-
-void Asembler::firstPass(){
-  bool syntaxError = false;
-  int tokenCnt = 0;
-  Token token, nextToken;
-
-  while(tokenCnt < tokens.size()){
-    if(syntaxError){
-      //uradi nesto
-      cout << "GRESKA PRI PARSIRANJU" << endl;
-      break;
-    }
-    token = tokens[tokenCnt++];
-
-    // cout << "Token " << token.getType() << " " << token.getText() << endl;
-
-    switch(token.getType()) {
+switch(token.getType()) {
       case TokenType::HALT:
-        syntaxError = check0(&tokenCnt) ? false : true;
-        cout << "halt dobar!" << endl;
+        if(nextToken.getType() == TokenType::EOL){
+          tokenCnt++;
+          incCounter(INSTRUCTION_SIZE);
+        } else {
+          syntaxError = true;
+        }
         break;
     case TokenType::INT:
-      syntaxError = check0(&tokenCnt) ? false : true;
-      cout << "int dobar!" << endl;
+      if(nextToken.getType() == TokenType::EOL){
+          tokenCnt++;
+          incCounter(INSTRUCTION_SIZE);
+        } else {
+          syntaxError = true;
+        }
       break;
     case TokenType::IRET:
-      syntaxError = check0(&tokenCnt) ? false : true;
-      cout << "iret dobar!" << endl;
+      if(nextToken.getType() == TokenType::EOL){
+          tokenCnt++;
+          incCounter(INSTRUCTION_SIZE);
+        } else {
+          syntaxError = true;
+        }
       break;
     case TokenType::CALL: 
-      syntaxError = check1boperand(&tokenCnt) ? false : true;
-      cout << "call dobar!" << endl;
+      if(nextToken.getType() == TokenType::EOL){
+          tokenCnt++;
+          incCounter(INSTRUCTION_SIZE);
+        } else {
+          syntaxError = true;
+        }
       break;
-    case TokenType::RET:
-      syntaxError = check0(&tokenCnt) ? false : true;
-      cout << "ret dobar!" << endl;
-      break;
-    case TokenType::JMP: 
-      syntaxError = check1boperand(&tokenCnt) ? false : true;
-      cout << "jmp dobar!" << endl;
-      break;
+    // case TokenType::RET: out << "RET"; break;
+    // case TokenType::JMP: out << "JMP"; break;
     // case TokenType::BEQ: out << "BEQ"; break;
     // case TokenType::BNE: out << "BNE"; break;
     // case TokenType::BGT: out << "BGT"; break;
@@ -101,34 +79,5 @@ void Asembler::firstPass(){
     // case TokenType::EOL: out << "EOL"; break;
     // case TokenType::END_FILE: out << "END_FILE"; break;
     // case TokenType::NONE: out << "NONE"; break;
-    default: syntaxError = true; break;
+    default: break;
     }
-  }
-}
-
-bool Asembler::check0(int* tokenCnt){
-  Token nextToken;
-  if(*tokenCnt < tokens.size()) {
-    nextToken = tokens[(*tokenCnt)++];
-    if(nextToken.getType() == TokenType::EOL){
-      //(*tokenCnt)++;
-      incCounter(INSTRUCTION_SIZE);
-      return true;
-    } else return false;
-  } else return false;
-}
-
-bool Asembler::check1boperand(int* tokenCnt){
-  Token nextToken;
-  if(*tokenCnt < tokens.size()-1) {
-    nextToken = tokens[(*tokenCnt)++];
-    if(Token::isBranchOperand(nextToken.getType())){
-      //tokenCnt++;
-      nextToken = tokens[(*tokenCnt)++];
-      if(nextToken.getType() == TokenType::EOL){
-        incCounter(INSTRUCTION_SIZE);
-        return true;
-      } else return false;
-    } else return false;
-  } else return false;
-}
