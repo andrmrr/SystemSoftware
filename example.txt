@@ -1,0 +1,5 @@
+.section nova_sekcija #nista ovo
+.section druga_sekcija
+#labela: $0x99f
+#.greska
+#radi %sp

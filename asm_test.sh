@@ -1,0 +1,1 @@
+c++ -I./reflex/include -o tokenizacija main.cpp lex.yy.cpp tokens.cpp ./reflex/lib/libreflex.a
