@@ -1,0 +1,17 @@
+#test za proveru formata instrukcije
+beq %sp, %r0, adrskok
+halt
+jmp 0x00
+pop %r2
+add %r14, %pc
+ld $0xff00, %r0
+ld $zezanje, %r0
+ld [%pc], %r1
+ld [%r0+14], %r0
+st %r0,$0xff00
+st %r0,$zezanje
+st %r1 ,    [%pc]
+st %r0, [%r0+14]
+csrrd %status, %r0
+csrwr %sp,%handler
+csrrd %cause , %pc

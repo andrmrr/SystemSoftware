@@ -1,0 +1,1 @@
+c++ -I./reflex/include -g -o asembler main.cpp lex.yy.cpp asembler.cpp tokens.cpp symbolTable.cpp symbol.cpp ./reflex/lib/libreflex.a

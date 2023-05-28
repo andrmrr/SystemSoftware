@@ -1,0 +1,8 @@
+.section nz
+.ascii "fasdfs&=+`~"
+#.section nova_sekcija #nista ovo
+#.section druga_sekcija
+#labela:
+#labela: $0x99f
+#.greska
+#radi %sp
