@@ -16,8 +16,11 @@ public:
   static void initSymbolTable();
   static void deleteInstance();
 
-  Symbol* addSymbol(string n, int sec);
-  Symbol* addAbsolute(string n, int sec, int val);
+  Symbol* addAbsolute(string n, int sec);
+  Symbol* addSymbol(string n, int sec, int val);
   Symbol* addSection(string n);
+
+  //record methods
+  Symbol* findSymbol(string name);
 
 };

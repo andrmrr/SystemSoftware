@@ -33,6 +33,8 @@ void Asembler::firstPass(){
   bool syntaxError = false;
   int tokenCnt = 0;
   Token token, nextToken;
+  int temp;
+  string strTemp;
 
   while(tokenCnt < tokens.size()){
     token = tokens[tokenCnt++];
@@ -146,11 +148,14 @@ void Asembler::firstPass(){
         syntaxError = check1gpr1csr(&tokenCnt) ? false : true;
         cout << "csrwr dobar!" << endl;
         break;
+      case TokenType::LABEL:
+        strTemp = token.getText();
+        symbolTable->addSymbol(strTemp.substr(0, strTemp.size()-1), currSection->getSection(), lcounter);
+        break;
       case TokenType::GLOBAL: 
         syntaxError = checkSymbolList(tokenCnt) ? false : true;
         cout << "global dobar!" << endl;
         if(!syntaxError){
-          Token nextToken;
           while((nextToken = tokens[tokenCnt++].getType()).getType() != TokenType::EOL);
         }
         break;
@@ -158,10 +163,9 @@ void Asembler::firstPass(){
         syntaxError = checkSymbolList(tokenCnt) ? false : true;
         cout << "extern dobar!" << endl;
         if(!syntaxError){
-          Token nextToken;
           while(true){
             nextToken = tokens[tokenCnt++];
-            symbolTable->addSymbol(nextToken.getText(), 0);
+            symbolTable->addSymbol(nextToken.getText(), 0, 0);
             nextToken = tokens[tokenCnt++];
             if(nextToken.getType() == TokenType::EOL) break;
           }
@@ -172,22 +176,33 @@ void Asembler::firstPass(){
         cout << "section dobar!" << endl;
         if(!syntaxError) {
           closeSection();
-          Token nextToken;
           nextToken = tokens[tokenCnt++];
           openSection(nextToken.getText());
         }
         break;
       case TokenType::WORD:
-        syntaxError = checkSymbolOrLiteralList(&tokenCnt) ? false : true;
         cout << "word dobar!" << endl;
+        temp = checkSymbolOrLiteralList(&tokenCnt);
+        syntaxError = (temp == -1);
+        if(!syntaxError){
+          incCounter(4*temp);
+        }
         break;
       case TokenType::SKIP:
         cout << "skip dobar!" << endl;
-        syntaxError = checkLiteral(&tokenCnt) ? false : true;
+        temp = checkLiteral(&tokenCnt);
+        syntaxError = (temp == -1);
+        if(!syntaxError){
+          incCounter(temp);
+        }
         break;
       case TokenType::ASCII:
         cout << "ascii dobar!" << endl;
-        syntaxError = checkString(&tokenCnt) ? false : true;
+        temp = checkString(&tokenCnt);
+        syntaxError = (temp == -1);
+        if(!syntaxError){
+          incCounter(temp);
+        }
         break;
       case TokenType::EQU:
         cout << "equ dobar!" << endl;
@@ -195,9 +210,9 @@ void Asembler::firstPass(){
         break;
       case TokenType::END:
         cout << "end dobar!" << endl;
+        closeSection();
         syntaxError = check0(&tokenCnt) ? false : true;
         return;
-        break;
       default: syntaxError = true; break;
     }
 
@@ -207,6 +222,8 @@ void Asembler::firstPass(){
       break;
     }
   }
+  closeSection();
+  cout << "Reda radi" << endl;
 }
 
 bool Asembler::check0(int* tokenCnt){
@@ -429,28 +446,31 @@ bool Asembler::checkSymbolList(int tokenCnt){
   } else return false;
 }
 
-bool Asembler::checkSymbolOrLiteralList(int* tokenCnt){
+int Asembler::checkSymbolOrLiteralList(int* tokenCnt){
+  int cnt = 0;
   Token nextToken;
   if((*tokenCnt) < tokens.size()){
     nextToken = tokens[(*tokenCnt)++];
     if(Token::isBranchOperand(nextToken.getType())){
+      cnt++;
       while(true){
         if((*tokenCnt) < tokens.size()){
           nextToken = tokens[(*tokenCnt)++];
           if(nextToken.getType() == TokenType::EOL) {
-            return true;
+            return cnt;
           } else if(nextToken.getType() == TokenType::COMMA) {
             if((*tokenCnt) < tokens.size()){
               nextToken = tokens[(*tokenCnt)++];
               if(Token::isBranchOperand(nextToken.getType())){
+                cnt++;
                 continue;
-              } else return false;
-            } else return false;
-          } else return false;
-        } else return false;
+              } else return -1;
+            } else return -1;
+          } else return -1;
+        } else return -1;
       }
-    } else return false; 
-  } else return false; 
+    } else return -1; 
+  } else return -1; 
 }
 
 bool Asembler::checkSymbol(int tokenCnt){
@@ -466,30 +486,38 @@ bool Asembler::checkSymbol(int tokenCnt){
   } return false;
 }
 
-bool Asembler::checkLiteral(int* tokenCnt){
+int Asembler::checkLiteral(int* tokenCnt){
+  int val;
   Token nextToken;
   if((*tokenCnt) < tokens.size()-1) {
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::HEX || nextToken.getType() == TokenType::DEC){
+      if(nextToken.getType() == TokenType::HEX){
+        val = hexStringToInt(nextToken.getText());
+      } else {
+        val = atoi(nextToken.getText().c_str());
+      }
       nextToken = tokens[(*tokenCnt)++];
       if(nextToken.getType() == TokenType::EOL) {
-        return true;
-      } else return false;
-    } else return false;
-  } return false;
+        return val;
+      } else return -1;
+    } else return -1;
+  } return -1;
 }
 
-bool Asembler::checkString(int* tokenCnt){
+int Asembler::checkString(int* tokenCnt){
   Token nextToken;
+  int size;
   if((*tokenCnt) < tokens.size()-1) {
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::STRING){
+      size = nextToken.getText().size();
       nextToken = tokens[(*tokenCnt)++];
       if(nextToken.getType() == TokenType::EOL) {
-        return true;
-      } else return false;
-    } else return false;
-  } return false;
+        return size;
+      } else return -1;
+    } else return -1;
+  } return -1;
 }
 
 bool Asembler::checkExpr(int* tokenCnt){
@@ -521,4 +549,70 @@ bool Asembler::checkExpr(int* tokenCnt){
       } else return false;
     } else return false;
   } else return false;
+}
+
+int Asembler::hexStringToInt(string hex){
+  int val = 0;
+  char current;
+  for(int i = 2; i < hex.size(); i++){
+    current = hex[i];
+    val *= 16;
+    switch(current){
+      case '0':
+        val += 0;
+        break;
+      case '1':
+        val += 1;
+        break;
+      case '2':
+        val += 2;
+        break;
+      case '3':
+        val += 3;
+        break;
+      case '4':
+        val += 4;
+        break;
+      case '5':
+        val += 5;
+        break;
+      case '6':
+        val += 6;
+        break;
+      case '7':
+        val += 7;
+        break;
+      case '8':
+        val += 8;
+        break;
+      case '9':
+        val += 9;
+        break;
+      case 'a':
+      case 'A':
+        val += 10;
+        break;
+      case 'b':
+      case 'B':
+        val += 11;
+        break;
+      case 'c':
+      case 'C':
+        val += 12;
+        break;
+      case 'd':
+      case 'D':
+        val += 13;
+        break;
+      case 'e':
+      case 'E':
+        val += 14;
+        break;
+      case 'f':
+      case 'F':
+        val += 15;
+        break;  
+    }
+  }
+  return val;
 }

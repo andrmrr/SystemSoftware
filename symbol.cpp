@@ -2,10 +2,10 @@
 
 int Symbol::globalId = 0;
 
-Symbol::Symbol(string n, int sec){
+Symbol::Symbol(string n, int val){
   this->id = globalId++;
   this->name = n;
-  this->section = sec;
+  this->value = val;
 }
 
 Symbol::Symbol(string n, int sec, int val){
@@ -32,4 +32,8 @@ void Symbol::setSize(int sz){
 
 int Symbol::getSection(){
   return this->section;
+}
+
+string Symbol::getName(){
+  return this->name;
 }

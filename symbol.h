@@ -19,13 +19,13 @@ class Symbol {
   string name;
 
 public:
-  Symbol(string n, int sec); // za regularne simbole
-  Symbol(string n, int sec, int val); // za equ
+  Symbol(string n, int val); // za equ - idu u abs sekciju
+  Symbol(string n, int sec, int val); // za regularne simbole
   Symbol(string n, SymbolType t); // za sekcije
 
   // setters and getters
   void setGlobal();
   void setSize(int sz);
   int getSection();
-
+  string getName();
 };

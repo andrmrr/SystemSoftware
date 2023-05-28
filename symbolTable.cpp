@@ -12,8 +12,9 @@ SymbolTable* SymbolTable::getInstace(){
 void SymbolTable::initSymbolTable(){
   if(instance != nullptr) delete instance;
   SymbolTable* st = new SymbolTable();
-  st->addSymbol("UND", 0);
-  st->addSection("ABS");
+  st->addSymbol("UND", 0, 0);
+  Symbol* s = st->addSection("ABS");
+  s->setGlobal();
   instance = st;
 }
 
@@ -28,18 +29,27 @@ SymbolTable::~SymbolTable(){
   }
 }
 
-  Symbol* SymbolTable::addSymbol(string n, int sec){
-    Symbol* s = new Symbol(n, sec); 
-    symbols.push_back(s);
-    return s;
+Symbol* SymbolTable::addAbsolute(string n, int val){
+  Symbol* s = new Symbol(n, val); 
+  symbols.push_back(s);
+  return s;
+}
+Symbol* SymbolTable::addSymbol(string n, int sec, int val){
+  Symbol* s = new Symbol(n, sec, val); 
+  symbols.push_back(s);
+  return s;
+}
+Symbol* SymbolTable::addSection(string n){
+  Symbol* s = new Symbol(n, SymbolType::SECTION); 
+  symbols.push_back(s);
+  return s;
+}
+
+Symbol* SymbolTable::findSymbol(string name){
+  for(auto it = symbols.begin(); it != symbols.end(); it++){
+    if(((*it)->getName()).compare(name) == 0){
+      return *it;
+    }
   }
-  Symbol* SymbolTable::addAbsolute(string n, int sec, int val){
-    Symbol* s = new Symbol(n, sec, val); 
-    symbols.push_back(s);
-    return s;
-  }
-  Symbol* SymbolTable::addSection(string n){
-    Symbol* s = new Symbol(n, SymbolType::SECTION); 
-    symbols.push_back(s);
-    return s;
-  }
+  return nullptr;
+}
