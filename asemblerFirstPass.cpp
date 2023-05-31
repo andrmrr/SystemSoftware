@@ -3,11 +3,24 @@
 using namespace std;
 
 Asembler::Asembler(vector<Token> tl) {
+  error = false;
   lcounter = 0;
   tokens = tl;
   currSection = nullptr;
   SymbolTable::initSymbolTable();
-  symbolTable = SymbolTable::getInstace();
+  symbolTable = SymbolTable::getInstance();
+}
+
+Asembler::~Asembler(){
+  symbolTable->deleteInstance();
+  for(auto it = relTables.begin(); it != relTables.end(); it ++){
+    delete (*it);
+  }
+  secTable->deleteInstance();
+}
+
+bool Asembler::getError(){
+  return error;
 }
 
 int const Asembler::getCounter(){
@@ -33,7 +46,7 @@ void Asembler::firstPass(){
   bool syntaxError = false;
   int tokenCnt = 0;
   Token token, nextToken;
-  int temp;
+  int temp, opCodeIndex;
   string strTemp;
 
   while(tokenCnt < tokens.size()){
@@ -46,126 +59,190 @@ void Asembler::firstPass(){
         break;
       case TokenType::HALT:
         syntaxError = check0(&tokenCnt) ? false : true;
-        cout << "halt dobar!" << endl;
+        incCounter(1); // opcode
+        // cout << "halt dobar!" << endl;
         break;
       case TokenType::INT:
         syntaxError = check0(&tokenCnt) ? false : true;
-        cout << "int dobar!" << endl;
+        incCounter(1); // opcode
+        // cout << "int dobar!" << endl;
         break;
       case TokenType::IRET:
         syntaxError = check0(&tokenCnt) ? false : true;
-        cout << "iret dobar!" << endl;
+        incCounter(1); // opcode
+        // cout << "iret dobar!" << endl;
         break;
       case TokenType::CALL: 
         syntaxError = check1boperand(&tokenCnt) ? false : true;
-        cout << "call dobar!" << endl;
+        incCounter(5); // opcode-op[0]-op[1]-op[2]-op[3]
+        // cout << "call dobar!" << endl;
         break;
       case TokenType::RET:
         syntaxError = check0(&tokenCnt) ? false : true;
-        cout << "ret dobar!" << endl;
+        incCounter(1); // opcode
+        // cout << "ret dobar!" << endl;
         break;
       case TokenType::JMP: 
         syntaxError = check1boperand(&tokenCnt) ? false : true;
-        cout << "jmp dobar!" << endl;
+        incCounter(5);  // opcode-op[0]-op[1]-op[2]-op[3]
+        // cout << "jmp dobar!" << endl;
         break;
       case TokenType::BEQ: 
         syntaxError = check2gpr1boperand(&tokenCnt) ? false : true;
-        cout << "beq dobar!" << endl;
+        incCounter(6); // opcode-(gpr1gpr2)-op[0]-op[1]-op[2]-op[3]
+        // cout << "beq dobar!" << endl;
         break;
       case TokenType::BNE:
         syntaxError = check2gpr1boperand(&tokenCnt) ? false : true;
-        cout << "bne dobar!" << endl;
+        incCounter(6); // opcode-(gpr1gpr2)-op[0]-op[1]-op[2]-op[3]
+        // cout << "bne dobar!" << endl;
         break;
       case TokenType::BGT:
         syntaxError = check2gpr1boperand(&tokenCnt) ? false : true;
-        cout << "bgt dobar!" << endl;
+        incCounter(6); // opcode-(gpr1gpr2)-op[0]-op[1]-op[2]-op[3]
+        // cout << "bgt dobar!" << endl;
         break;
       case TokenType::PUSH:
         syntaxError = check1gpr(&tokenCnt) ? false : true;
-        cout << "push dobar!" << endl;
+        incCounter(2); // opcode-(0x0gpr)
+        // cout << "push dobar!" << endl;
         break;
       case TokenType::POP:
         syntaxError = check1gpr(&tokenCnt) ? false : true;
-        cout << "pop dobar!" << endl;
+        incCounter(2); // opcode-(0x0gpr)
+        // cout << "pop dobar!" << endl;
         break;
       case TokenType::XCHG:
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "add dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "xchg dobar!" << endl;
         break;
       case TokenType::ADD:
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "add dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "add dobar!" << endl;
         break;
       case TokenType::SUB:
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "sub dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "sub dobar!" << endl;
         break;
       case TokenType::MUL: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "mul dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "mul dobar!" << endl;
         break;
       case TokenType::DIV: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "div dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "div dobar!" << endl;
         break;
       case TokenType::NOT: 
         syntaxError = check1gpr(&tokenCnt) ? false : true;
-        cout << "not dobar!" << endl;
+        incCounter(2); // opcode-(0x0gpr)
+        // cout << "not dobar!" << endl;
         break;
       case TokenType::AND: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "and dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "and dobar!" << endl;
         break;
       case TokenType::OR: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "or dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "or dobar!" << endl;
         break;
       case TokenType::XOR: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "xor dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "xor dobar!" << endl;
         break;
       case TokenType::SHL: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "shl dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "shl dobar!" << endl;
         break;
       case TokenType::SHR: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        cout << "shr dobar!" << endl;
+        incCounter(2); // opcode-(gprDgprS)
+        // cout << "shr dobar!" << endl;
         break;
       case TokenType::LD: 
-        syntaxError = check1doperand1gpr(&tokenCnt) ? false : true;
-        cout << "ld dobar!" << endl;
+        opCodeIndex = tokenCnt-1;
+        temp = check1doperand1gpr(&tokenCnt);
+        syntaxError = (temp == -1);
+        if(!syntaxError){
+          if(temp == 0) {
+            tokens[opCodeIndex].setType(TokenType::LDMEMDIR); // opcode-(0x0gprD)-op[0]-op[1]-op[2]-op[3]
+            incCounter(6);
+          } else if(temp == 1) {
+            tokens[opCodeIndex].setType(TokenType::LDREGDIR); // opcode-(gprDgprS)
+            incCounter(2);
+          } else if(temp == 2) {
+            tokens[opCodeIndex].setType(TokenType::LDREGIND); // opcode-(gprDgprS)
+            incCounter(2);
+          } else if(temp == 3) {
+            tokens[opCodeIndex].setType(TokenType::LDREGINDADD); // opcode-(gprDgprS)-op[0]-op[1]
+            incCounter(4);
+          } else {
+            tokens[opCodeIndex].setType(TokenType::LDIMMED); // opcode-(0x0gprD)-op[0]-op[1]-op[2]-op[3]
+            incCounter(6);
+          }
+        }
+        // cout << "ld dobar!" << endl;
         break;
       case TokenType::ST: 
-        syntaxError = check1gpr1doperand(&tokenCnt) ? false : true;
-        cout << "st dobar!" << endl;
+        opCodeIndex = tokenCnt-1;
+        temp = check1gpr1doperand(&tokenCnt);
+        syntaxError = (temp == -1);
+        if(!syntaxError){
+          if(temp == 0) {
+            tokens[opCodeIndex].setType(TokenType::STMEMDIR); // opcode-(0x0gprD)-op[0]-op[1]-op[2]-op[3]
+            incCounter(6);
+          } else if(temp == 1) {
+            tokens[opCodeIndex].setType(TokenType::STREGDIR);  // opcode-(gprDgprS)
+            incCounter(2);
+          } else if(temp == 2) {
+            tokens[opCodeIndex].setType(TokenType::STREGIND); // opcode-(gprDgprS)
+            incCounter(2);
+          } else {
+            tokens[opCodeIndex].setType(TokenType::STREGINDADD); // opcode-(gprDgprS)-op[0]-op[1]
+            incCounter(4);
+          }
+        }
+        // cout << "st dobar!" << endl;
         break;
       case TokenType::CSRRD:  
-        syntaxError = check1csr1gpr(&tokenCnt) ? false : true;
-        cout << "csrrd dobar!" << endl;
+        syntaxError = check1csr1gpr(&tokenCnt) ? false : true; // opcode-(gprDcsrS)
+        incCounter(2);
+        // cout << "csrrd dobar!" << endl;
         break;
       case TokenType::CSRWR: 
-        syntaxError = check1gpr1csr(&tokenCnt) ? false : true;
-        cout << "csrwr dobar!" << endl;
+        syntaxError = check1gpr1csr(&tokenCnt) ? false : true; // opcode-(csrDgprS)
+        incCounter(2);
+        // cout << "csrwr dobar!" << endl;
         break;
       case TokenType::LABEL:
         strTemp = token.getText();
-        symbolTable->addSymbol(strTemp.substr(0, strTemp.size()-1), currSection->getSection(), lcounter);
+        strTemp = strTemp.substr(0, strTemp.size()-1);
+        symbolTable->addSymbol(strTemp, currSection->getSection(), lcounter);
+        token.setText(strTemp);
         break;
       case TokenType::GLOBAL: 
         syntaxError = checkSymbolList(tokenCnt) ? false : true;
-        cout << "global dobar!" << endl;
+        // cout << "global dobar!" << endl;
         if(!syntaxError){
           while((nextToken = tokens[tokenCnt++].getType()).getType() != TokenType::EOL);
         }
         break;
       case TokenType::EXTERN: 
         syntaxError = checkSymbolList(tokenCnt) ? false : true;
-        cout << "extern dobar!" << endl;
+        // cout << "extern dobar!" << endl;
         if(!syntaxError){
           while(true){
             nextToken = tokens[tokenCnt++];
-            symbolTable->addSymbol(nextToken.getText(), 0, 0);
+            Symbol *s = symbolTable->addSymbol(nextToken.getText(), 0, 0);
+            s->setGlobal();
             nextToken = tokens[tokenCnt++];
             if(nextToken.getType() == TokenType::EOL) break;
           }
@@ -173,7 +250,7 @@ void Asembler::firstPass(){
         break;
       case TokenType::SECTION:
         syntaxError = checkSymbol(tokenCnt) ? false : true;
-        cout << "section dobar!" << endl;
+        // cout << "section dobar!" << endl;
         if(!syntaxError) {
           closeSection();
           nextToken = tokens[tokenCnt++];
@@ -181,7 +258,7 @@ void Asembler::firstPass(){
         }
         break;
       case TokenType::WORD:
-        cout << "word dobar!" << endl;
+        // cout << "word dobar!" << endl;
         temp = checkSymbolOrLiteralList(&tokenCnt);
         syntaxError = (temp == -1);
         if(!syntaxError){
@@ -189,7 +266,7 @@ void Asembler::firstPass(){
         }
         break;
       case TokenType::SKIP:
-        cout << "skip dobar!" << endl;
+        // cout << "skip dobar!" << endl;
         temp = checkLiteral(&tokenCnt);
         syntaxError = (temp == -1);
         if(!syntaxError){
@@ -197,7 +274,7 @@ void Asembler::firstPass(){
         }
         break;
       case TokenType::ASCII:
-        cout << "ascii dobar!" << endl;
+        // cout << "ascii dobar!" << endl;
         temp = checkString(&tokenCnt);
         syntaxError = (temp == -1);
         if(!syntaxError){
@@ -205,11 +282,11 @@ void Asembler::firstPass(){
         }
         break;
       case TokenType::EQU:
-        cout << "equ dobar!" << endl;
+        // cout << "equ dobar!" << endl;
         syntaxError = checkExpr(&tokenCnt) ? false : true;
         break;
       case TokenType::END:
-        cout << "end dobar!" << endl;
+        // cout << "end dobar!" << endl;
         closeSection();
         syntaxError = check0(&tokenCnt) ? false : true;
         return;
@@ -218,7 +295,8 @@ void Asembler::firstPass(){
 
     if(syntaxError){
       //uradi nesto
-      cout << "GRESKA PRI PARSIRANJU" << endl;
+      cout << "GRESKA PRI PARSIRANJU U PRVOM PROLAZU" << endl;
+      error = true;
       break;
     }
   }
@@ -231,7 +309,6 @@ bool Asembler::check0(int* tokenCnt){
   if(*tokenCnt < tokens.size()) {
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::EOL){
-      incCounter(INSTRUCTION_SIZE);
       return true;
     } else return false;
   } else return false;
@@ -244,7 +321,6 @@ bool Asembler::check1boperand(int* tokenCnt){
     if(Token::isBranchOperand(nextToken.getType())){
       nextToken = tokens[(*tokenCnt)++];
       if(nextToken.getType() == TokenType::EOL){
-        incCounter(INSTRUCTION_SIZE);
         return true;
       } else return false;
     } else return false;
@@ -266,7 +342,6 @@ bool Asembler::check2gpr1boperand(int* tokenCnt){
             if(Token::isBranchOperand(nextToken.getType())){
               nextToken = tokens[(*tokenCnt)++];
               if(nextToken.getType() == TokenType::EOL) {
-                incCounter(INSTRUCTION_SIZE);
                 return true;
               } else return false;
             } else return false;
@@ -284,7 +359,6 @@ bool Asembler::check1gpr(int* tokenCnt){
     if(nextToken.getType() == TokenType::GPR){
       nextToken = tokens[(*tokenCnt)++];
       if(nextToken.getType() == TokenType::EOL){
-        incCounter(INSTRUCTION_SIZE);
         return true;
       } else return false;
     } else return false;
@@ -302,7 +376,6 @@ bool Asembler::check2gpr(int* tokenCnt){
         if(nextToken.getType() == TokenType::GPR) {
           nextToken = tokens[(*tokenCnt)++];
           if(nextToken.getType() == TokenType::EOL) {
-            incCounter(INSTRUCTION_SIZE);
             return true;
           } else return false;
         } else return false;
@@ -311,48 +384,60 @@ bool Asembler::check2gpr(int* tokenCnt){
   } else return false;
 }
 
-bool Asembler::check1doperand1gpr(int* tokenCnt){
+int Asembler::check1doperand1gpr(int* tokenCnt){
+  int retVal;
   Token nextToken;
   if(*tokenCnt < tokens.size() - 3) {
     nextToken = tokens[(*tokenCnt)++];
-    if(Token::isSimpleDataOperand(nextToken.getType()) || isRegIndir(tokenCnt)) {
-      if(*tokenCnt < tokens.size() - 2){
+    if(nextToken.getType() == TokenType::SYM_CONST || nextToken.getType() == TokenType::LIT_DEC || nextToken.getType() == TokenType::LIT_HEX){
+      retVal = 4; //immed
+    } else if(nextToken.getType() == TokenType::DEC || nextToken.getType() == TokenType::HEX || nextToken.getType() == TokenType::IDENT){
+      retVal = 0; //memdir
+    } else if(nextToken.getType() == TokenType::GPR){
+      retVal = 1; //regdir
+    } else if((retVal = isRegIndir(tokenCnt)) == -1) {
+      return -1;  
+    }
+    if(*tokenCnt < tokens.size() - 2){
+      nextToken = tokens[(*tokenCnt)++];
+      if(nextToken.getType() == TokenType::COMMA) {
         nextToken = tokens[(*tokenCnt)++];
-        if(nextToken.getType() == TokenType::COMMA) {
+        if(nextToken.getType() == TokenType::GPR) {
           nextToken = tokens[(*tokenCnt)++];
-          if(nextToken.getType() == TokenType::GPR) {
-            nextToken = tokens[(*tokenCnt)++];
-            if(nextToken.getType() == TokenType::EOL) {
-              incCounter(INSTRUCTION_SIZE);
-              return true;
-            } else return false;
-          } else return false;
-        } else return false;
-      } else return false;  
-    } else return false;
-  } else return false;
+          if(nextToken.getType() == TokenType::EOL) {
+            return retVal;
+          } else return -1;
+        } else return -1;
+      } else return -1;
+    } else return -1;
+  } else return -1;
 }
 
-bool Asembler::check1gpr1doperand(int* tokenCnt){
+int Asembler::check1gpr1doperand(int* tokenCnt){
   Token nextToken;
+  int retVal;
   if(*tokenCnt < tokens.size() - 3) {
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::GPR) {
       nextToken = tokens[(*tokenCnt)++];
       if(nextToken.getType() == TokenType::COMMA) {
         nextToken = tokens[(*tokenCnt)++];
-        if(Token::isSimpleDataOperand(nextToken.getType()) || isRegIndir(tokenCnt)) {
-          if(*tokenCnt < tokens.size()){
-            nextToken = tokens[(*tokenCnt)++];
-            if(nextToken.getType() == TokenType::EOL) {
-              incCounter(INSTRUCTION_SIZE);
-              return true;
-            } else return false;
-          } else return false;
-        } else return false;
-      } else return false;  
-    } else return false;
-  } else return false;
+        if(nextToken.getType() == TokenType::DEC || nextToken.getType() == TokenType::HEX || nextToken.getType() == TokenType::IDENT){
+          retVal = 0; //memdir
+        } else if(nextToken.getType() == TokenType::GPR){
+          retVal = 1; //regdir
+        } else if((retVal = isRegIndir(tokenCnt)) == -1) {
+          return -1;
+        } 
+        if(*tokenCnt < tokens.size()){
+          nextToken = tokens[(*tokenCnt)++];
+          if(nextToken.getType() == TokenType::EOL) {
+            return retVal;
+          } else return -1;
+        } else return -1;
+      } else return -1;  
+    } else return -1;
+  } else return -1;
 }
 
 bool Asembler::check1csr1gpr(int* tokenCnt){
@@ -366,7 +451,6 @@ bool Asembler::check1csr1gpr(int* tokenCnt){
         if(nextToken.getType() == TokenType::GPR) {
           nextToken = tokens[(*tokenCnt)++];
           if(nextToken.getType() == TokenType::EOL) {
-            incCounter(INSTRUCTION_SIZE);
             return true;
           } else return false;
         } else return false;
@@ -386,7 +470,6 @@ bool Asembler::check1gpr1csr(int* tokenCnt){
         if(Token::isCsr(nextToken.getType())) {
           nextToken = tokens[(*tokenCnt)++];
           if(nextToken.getType() == TokenType::EOL) {
-            incCounter(INSTRUCTION_SIZE);
             return true;
           } else return false;
         } else return false;
@@ -395,7 +478,7 @@ bool Asembler::check1gpr1csr(int* tokenCnt){
   } else return false;    
 }
 
-bool Asembler::isRegIndir(int* tokenCnt){
+int Asembler::isRegIndir(int* tokenCnt){
   (*tokenCnt)--;
   Token nextToken;
   if(*tokenCnt < tokens.size() - 2) {
@@ -405,21 +488,21 @@ bool Asembler::isRegIndir(int* tokenCnt){
       if(nextToken.getType() == TokenType::GPR) {
         nextToken = tokens[(*tokenCnt)++];
         if(nextToken.getType() == TokenType::BR_CLOSE) {
-          return true;
+          return 2; // regindir
         } else if(nextToken.getType() == TokenType::PLUS) {
           if(*tokenCnt < tokens.size() - 1) {
             nextToken = tokens[(*tokenCnt)++];
             if(Token::isBranchOperand(nextToken.getType())) {
               nextToken = tokens[(*tokenCnt)++];
               if(nextToken.getType() == TokenType::BR_CLOSE) {
-                return true;
-              } else return false;
-            } else return false;
-          } else return false;
-        } else return false;
-      } else return false;
-    } else return false;  
-  } else return false;  
+                return 3; //regindir + addend
+              } else return -1;
+            } else return -1;
+          } else return -1;
+        } else return -1;
+      } else return -1;
+    } else return -1;  
+  } else return -1;  
 }
 
 bool Asembler::checkSymbolList(int tokenCnt){

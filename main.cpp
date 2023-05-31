@@ -41,6 +41,11 @@ int main(int argc, char** argv){
     cout << "dosli do prvog prolaza" << endl;
     as.firstPass();
     cout << "zavrsili prvi prolaz" << endl;
+    if(!as.getError()){
+      cout << "zapoceli drugi prolaz" << endl;
+      as.secondPass();
+      cout << "zavrsili drugi prolaz" << endl;
+    }
   }
 
 }

@@ -1,0 +1,27 @@
+#drugo testiranje drugog prolaza
+.global dd
+.section prva
+not %pc
+csrwr %pc, %status
+csrrd %handler, %r1
+csrrd %cause, %r0
+pp: 
+.section druga
+ld [%r5], %r5
+ld $ff, %r0
+ld 0xf10, %r5
+ld %r1, %pc
+ld [%r1 + 0xff], %r2
+ret
+ff:halt
+
+dd: int
+.section treca
+st %r6, [%r5]
+st %r5 , ff
+st %r1, %pc
+st %r2, [%r1 + 0x1f]
+ret
+beq %r1, %r15, pp
+
+halt

@@ -26,14 +26,30 @@ void Symbol::setGlobal(){
   this->global = true;
 }
 
+bool Symbol::isGlobal(){
+  return this->global;
+}
+
 void Symbol::setSize(int sz){
   this->size = sz;
 }
 
-int Symbol::getSection(){
+int Symbol::getValue(){
+  return this->value;
+}
+
+int Symbol::getId(){
+  return this->id;
+}
+
+int const Symbol::getSection(){
   return this->section;
 }
 
-string Symbol::getName(){
+string const Symbol::getName(){
   return this->name;
+}
+
+bool const Symbol::isSection(){
+  return this->type == SymbolType::SECTION;
 }

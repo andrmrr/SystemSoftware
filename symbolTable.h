@@ -12,7 +12,7 @@ class SymbolTable{
   
 public:
   //creation and destruction of the instance
-  static SymbolTable* getInstace();
+  static SymbolTable* getInstance();
   static void initSymbolTable();
   static void deleteInstance();
 
@@ -22,5 +22,7 @@ public:
 
   //record methods
   Symbol* findSymbol(string name);
+  Symbol* findSymbol(int id);
+  vector<Symbol*> getSections();
 
 };

@@ -1,5 +1,13 @@
 #include "tokens.h"
 
+void Token::setType(TokenType tt){
+  this->type = tt;
+}
+
+void Token::setText(string s){
+  this->text = s;
+}
+
 bool Token::isBranchOperand(TokenType tokenType){
   if(tokenType == TokenType::DEC || tokenType == TokenType::HEX || tokenType == TokenType::IDENT)
     return true;
@@ -12,11 +20,45 @@ bool Token::isCsr(TokenType tokenType){
   return false;
 }
 
-bool Token::isSimpleDataOperand(TokenType tokenType){
-  if(tokenType == TokenType::SYM_CONST || tokenType == TokenType::LIT_DEC || tokenType == TokenType::LIT_HEX
-     || tokenType == TokenType::DEC || tokenType == TokenType::HEX  || tokenType == TokenType::IDENT
-      || tokenType == TokenType::GPR) return true;
-  return false;
+
+
+char Token::getOPCodeBinary(TokenType tokenType){
+  switch(tokenType) {
+    case TokenType::HALT: return 0x00;
+    case TokenType::INT: return 0x10;
+    case TokenType::IRET: return 0x11;
+    case TokenType::CALL: return 0x20;
+    case TokenType::RET: return 0x21;
+    case TokenType::JMP: return 0x30;
+    case TokenType::BEQ: return 0x31;
+    case TokenType::BNE: return 0x32;
+    case TokenType::BGT: return 0x33;
+    case TokenType::XCHG: return 0x40;
+    case TokenType::ADD: return 0x50;
+    case TokenType::SUB: return 0x51;
+    case TokenType::MUL: return 0x52;
+    case TokenType::DIV: return 0x53;
+    case TokenType::NOT: return 0x60;
+    case TokenType::AND: return 0x61;
+    case TokenType::OR: return 0x62;
+    case TokenType::XOR: return 0x63;
+    case TokenType::SHL: return 0x70;
+    case TokenType::SHR: return 0x71;
+    case TokenType::LDMEMDIR: return 0x80;
+    case TokenType::LDREGDIR: return 0x81;
+    case TokenType::LDREGIND: return 0x82;
+    case TokenType::LDREGINDADD: return 0x83;
+    case TokenType::LDIMMED: return 0x84;
+    case TokenType::STMEMDIR: return 0x90;
+    case TokenType::STREGDIR: return 0x91;
+    case TokenType::STREGIND: return 0x92;
+    case TokenType::STREGINDADD: return 0x93;
+    case TokenType::CSRWR: return 0xa0;
+    case TokenType::CSRRD: return 0xa1;
+    case TokenType::PUSH: return 0xb0;
+    case TokenType::POP: return 0xb1;
+    default: return 0xff;
+  }
 }
 
 ostream& operator<<(std::ostream& out, const TokenType tokenType) {
@@ -45,6 +87,15 @@ ostream& operator<<(std::ostream& out, const TokenType tokenType) {
     case TokenType::SHR: out << "SHR"; break;
     case TokenType::LD: out << "LD"; break;
     case TokenType::ST: out << "ST"; break;
+    case TokenType::LDMEMDIR: out << "LDMEMDIR"; break;
+    case TokenType::LDREGDIR: out << "LDREGDIR"; break;
+    case TokenType::LDREGIND: out << "LDREGIND"; break;
+    case TokenType::LDREGINDADD: out << "LDREGINDADD"; break;
+    case TokenType::LDIMMED: out << "LDIMMED"; break;
+    case TokenType::STMEMDIR: out << "STMEMDIR"; break;
+    case TokenType::STREGDIR: out << "STREGDIR"; break;
+    case TokenType::STREGIND: out << "STREGIND"; break;
+    case TokenType::STREGINDADD: out << "STREGINDADD"; break;
     case TokenType::CSRRD: out << "CSRRD"; break;
     case TokenType::CSRWR: out << "CSRWR"; break;
     case TokenType::GLOBAL: out << "GLOBAL"; break;

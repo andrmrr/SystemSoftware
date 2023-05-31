@@ -25,7 +25,11 @@ public:
 
   // setters and getters
   void setGlobal();
+  bool isGlobal();
   void setSize(int sz);
-  int getSection();
-  string getName();
+  int getValue();
+  int getId();
+  int const getSection();
+  string const getName();
+  bool const isSection();
 };

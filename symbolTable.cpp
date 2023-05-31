@@ -2,7 +2,7 @@
 
 SymbolTable* SymbolTable::instance = nullptr;
 
-SymbolTable* SymbolTable::getInstace(){
+SymbolTable* SymbolTable::getInstance(){
   if(instance == nullptr){
     initSymbolTable();  
   } 
@@ -19,7 +19,7 @@ void SymbolTable::initSymbolTable(){
 }
 
 void SymbolTable::deleteInstance(){
-  SymbolTable* ins = getInstace();
+  SymbolTable* ins = getInstance();
   delete ins;
 }
 
@@ -52,4 +52,23 @@ Symbol* SymbolTable::findSymbol(string name){
     }
   }
   return nullptr;
+}
+
+Symbol* SymbolTable::findSymbol(int id){
+  for(auto it = symbols.begin(); it != symbols.end(); it++){
+    if((*it)->getId() == id){
+      return *it;
+    }
+  }
+  return nullptr;
+}
+
+vector<Symbol*> SymbolTable::getSections(){
+  vector<Symbol*> sections;
+  for(auto it = symbols.begin(); it != symbols.end(); it++){
+    if((*it)->isSection()){
+      sections.push_back(*it);
+    }
+  }
+  return sections;
 }

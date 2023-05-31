@@ -1,0 +1,18 @@
+#drugo testiranje drugog prolaza
+.global dd
+.section prva
+add %r1, %sp
+push %sp
+not %pc
+pp: 
+.section druga
+xchg %r0, %r1
+ff:halt
+xor %sp, %r11
+call 0x2f1
+dd: int
+.section treca
+ret
+beq %r1, %r15, pp
+shl %r5, %r5
+halt
