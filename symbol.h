@@ -1,11 +1,14 @@
 #pragma once
 #include <string>
+#include <ostream>
 
 using namespace std;
 
 enum class SymbolType{
   SECTION, NOTYP
 };
+
+ostream& operator<<(std::ostream& out, SymbolType tokenType);
 
 class Symbol {
   static int globalId; // 0 za UND, 1 za ABS
@@ -29,6 +32,8 @@ public:
   void setSize(int sz);
   int getValue();
   int getId();
+  int getSize();
+  SymbolType getType();
   int const getSection();
   string const getName();
   bool const isSection();

@@ -1,4 +1,11 @@
 #include "symbol.h"
+using namespace std;
+
+ostream& operator<<(ostream& out, SymbolType st) {
+  if(st == SymbolType::NOTYP) out << "NOTYP";
+  else out << "SCTN";
+  return out; 
+}
 
 int Symbol::globalId = 0;
 
@@ -40,6 +47,14 @@ int Symbol::getValue(){
 
 int Symbol::getId(){
   return this->id;
+}
+
+int Symbol::getSize(){
+  return this->size;
+}
+
+SymbolType Symbol::getType(){
+  return this->type;
 }
 
 int const Symbol::getSection(){

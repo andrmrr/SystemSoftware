@@ -1,15 +1,16 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
+#include <fstream>
 #include "tokens.h"
 #include "symbolTable.h"
 #include "relocationTable.h"
 #include "sectionTable.h"
 
-
-#define INSTRUCTION_SIZE 4
-
 class Asembler {
+
+  string outputFilePath;
 
   vector<Token> tokens;
   int lcounter;
@@ -23,6 +24,8 @@ class Asembler {
 
 public:
   Asembler(vector<Token> tlist);
+  Asembler(vector<Token> tlist, string outf);
+
   ~Asembler();
 
   void secondPassInit();
@@ -96,5 +99,7 @@ public:
   void handleSkip(int* tokenCnt);
   void handleAscii(int* tokenCnt);
 
-
+  //output methods
+  void createTextFile();
+  void createBinaryFile();
 };

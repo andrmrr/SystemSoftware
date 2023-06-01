@@ -55,5 +55,9 @@ void SectionTable::fillSection(Symbol* ss, char filler, int size){
   }
 }
 
+vector<Section*> SectionTable::getAllSections(){
+  return sections;
+}
+
 
 

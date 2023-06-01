@@ -1,8 +1,17 @@
 #include "asembler.h"
-#include <iostream>
 using namespace std;
 
 Asembler::Asembler(vector<Token> tl) {
+  error = false;
+  lcounter = 0;
+  tokens = tl;
+  currSection = nullptr;
+  SymbolTable::initSymbolTable();
+  symbolTable = SymbolTable::getInstance();
+}
+
+Asembler::Asembler(vector<Token> tl, string outf){
+  outputFilePath = outf;
   error = false;
   lcounter = 0;
   tokens = tl;

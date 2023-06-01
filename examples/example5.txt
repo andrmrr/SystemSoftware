@@ -1,5 +1,5 @@
 #drugo testiranje drugog prolaza
-.global dd
+.global dd, ff
 .section prva
 not %pc
 csrwr %pc, %status

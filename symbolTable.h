@@ -24,5 +24,6 @@ public:
   Symbol* findSymbol(string name);
   Symbol* findSymbol(int id);
   vector<Symbol*> getSections();
+  vector<Symbol*> getAllSymbols();
 
 };

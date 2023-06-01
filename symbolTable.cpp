@@ -72,3 +72,7 @@ vector<Symbol*> SymbolTable::getSections(){
   }
   return sections;
 }
+
+vector<Symbol*> SymbolTable::getAllSymbols(){
+  return symbols;
+}

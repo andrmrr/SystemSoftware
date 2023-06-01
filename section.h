@@ -14,4 +14,7 @@ class Section{
   void fill(char filler, int size);
 
   friend class SectionTable;
+public:
+  vector<char> getData();
+  Symbol* getSectionSymbol();
 };

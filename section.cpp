@@ -11,3 +11,11 @@ void Section::fill(char filler, int size){
     data.push_back(filler);
   }
 }
+
+vector<char> Section::getData(){
+  return this->data;
+}
+
+Symbol* Section::getSectionSymbol(){
+  return this->sectionSymbol;
+}

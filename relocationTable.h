@@ -7,6 +7,8 @@ using namespace std;
 
 enum RelocationType {R_X86_64_32 , R_X86_64_PC32};
 
+ostream& operator<<(ostream& out, const RelocationType rt);
+
 struct Relocation {
   Relocation() = delete;
   Relocation(int o, RelocationType t, string s, int a) : offset(o), type(t), symbol(s), addend(a) {}
@@ -23,11 +25,13 @@ class RelocationTable {
 
   
 public:
-  RelocationTable(Symbol* s) : section(s){}
+  RelocationTable(Symbol* s) : section(s) {}
   ~RelocationTable();
 
   Relocation* addAbsolute(int offs, string sym, int a);
   Relocation* addRelative(int offs, string sym, int a);
 
   Symbol* getSection();
+  vector<Relocation*> getRelocations();
+
 };

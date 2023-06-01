@@ -1,1 +1,1 @@
-c++ -I./reflex/include -g -o asembler main.cpp lex.yy.cpp asemblerFirstPass.cpp asemblerSecondPass.cpp tokens.cpp sectionTable.cpp section.cpp relocationTable.cpp symbolTable.cpp symbol.cpp ./reflex/lib/libreflex.a
+c++ -I./reflex/include -g -o asembler main.cpp lex.yy.cpp asemblerFirstPass.cpp asemblerSecondPass.cpp asemblerOutput.cpp tokens.cpp sectionTable.cpp section.cpp relocationTable.cpp symbolTable.cpp symbol.cpp ./reflex/lib/libreflex.a
