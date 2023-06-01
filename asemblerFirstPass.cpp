@@ -19,7 +19,7 @@ Asembler::~Asembler(){
   secTable->deleteInstance();
 }
 
-bool Asembler::getError(){
+bool const Asembler::getError(){
   return error;
 }
 
@@ -29,6 +29,10 @@ int const Asembler::getCounter(){
 
 void Asembler::incCounter(int inc){
   lcounter += inc;
+}
+
+void Asembler::resetCounter(){
+  lcounter = 0;
 }
 
 void Asembler::openSection(string name){

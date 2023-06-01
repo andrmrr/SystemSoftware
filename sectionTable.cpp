@@ -48,5 +48,12 @@ void SectionTable::writeToSection(Symbol* ss, char* chars, int size){
   }
 }
 
+void SectionTable::fillSection(Symbol* ss, char filler, int size){
+  Section* section = findSection(ss);
+  if(section != nullptr){
+    section->fill(filler, size);
+  }
+}
+
 
 

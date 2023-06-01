@@ -11,6 +11,7 @@ class Section{
   Section(Symbol* ss) : sectionSymbol(ss) {}
 
   void write(char* chars, int size);
+  void fill(char filler, int size);
 
   friend class SectionTable;
 };

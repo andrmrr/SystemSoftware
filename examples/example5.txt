@@ -24,4 +24,15 @@ st %r2, [%r1 + 0x1f]
 ret
 beq %r1, %r15, pp
 
+.section cetvrta
+.skip 6
+ret
+.ascii "zezanje"
+halt
+halt
+.word ff, 0x00ff0000, 19
+.end
+.skip 11
+
+
 halt

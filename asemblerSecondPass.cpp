@@ -11,16 +11,13 @@ void Asembler::secondPassInit(){
   }
 }
 
-void Asembler::openSectionSecondPass(string name){
-  currSection = symbolTable->findSymbol(name);
-}
-
-void Asembler::closeSectionSecondPass(){
-  lcounter = 0;
-}
-
 void Asembler::write(char* chars, int size){
   secTable->writeToSection(currSection, chars, size);
+  incCounter(size);
+}
+
+void Asembler::fill(char filler, int size){
+  secTable->fillSection(currSection, filler, size);
   incCounter(size);
 }
 
@@ -203,64 +200,35 @@ void Asembler::secondPass(){
         handle1gpr1csr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
-      // case TokenType::GLOBAL: 
-      //   syntaxError = checkSymbolList(tokenCnt) ? false : true;
-      //   cout << "global dobar!" << endl;
-      //   if(!syntaxError){
-      //     while((nextToken = tokens[tokenCnt++].getType()).getType() != TokenType::EOL);
-      //   }
-      //   break;
-      // case TokenType::EXTERN: 
-      //   syntaxError = checkSymbolList(tokenCnt) ? false : true;
-      //   cout << "extern dobar!" << endl;
-      //   if(!syntaxError){
-      //     while(true){
-      //       nextToken = tokens[tokenCnt++];
-      //       symbolTable->addSymbol(nextToken.getText(), 0, 0);
-      //       nextToken = tokens[tokenCnt++];
-      //       if(nextToken.getType() == TokenType::EOL) break;
-      //     }
-      //   }
-      //   break;
+      case TokenType::GLOBAL: 
+        cout << "global" << endl;
+        syntaxError = handleGlobal(&tokenCnt) ? false : true;
+        break;
       case TokenType::SECTION:
         cout << "section" << endl;
-        closeSectionSecondPass();
+        resetCounter();
         nextToken = tokens[tokenCnt++];
-        openSectionSecondPass(nextToken.getText());
+        currSection = symbolTable->findSymbol(nextToken.getText());
         break;
-      // case TokenType::WORD:
-      //   cout << "word dobar!" << endl;
-      //   // temp = checkSymbolOrLiteralList(&tokenCnt);
-      //   // syntaxError = (temp == -1);
-      //   // if(!syntaxError){
-      //   //   incCounter(4*temp);
-      //   // }
-      //   break;
-      // case TokenType::SKIP:
-      //   cout << "skip dobar!" << endl;
-      //   // temp = checkLiteral(&tokenCnt);
-      //   // syntaxError = (temp == -1);
-      //   // if(!syntaxError){
-      //   //   incCounter(temp);
-      //   // }
-      //   break;
-      // case TokenType::ASCII:
-      //   cout << "ascii dobar!" << endl;
-      //   // temp = checkString(&tokenCnt);
-      //   // syntaxError = (temp == -1);
-      //   // if(!syntaxError){
-      //   //   incCounter(temp);
-      //   // }
-      //   break;
+      case TokenType::WORD:
+        cout << "word" << endl;
+        syntaxError = handleWord(&tokenCnt, cTemp) ? false : true;
+        break;
+      case TokenType::SKIP:
+        cout << "skip" << endl;
+        handleSkip(&tokenCnt);
+        break;
+      case TokenType::ASCII:
+        cout << "ascii" << endl;
+        handleAscii(&tokenCnt);
+        break;
       // case TokenType::EQU:
       //   cout << "equ dobar!" << endl;
       //   syntaxError = checkExpr(&tokenCnt) ? false : true;
       //   break;
-      // case TokenType::END:
-      //   cout << "end dobar!" << endl;
-      //   closeSectionSecondPass();
-      //   syntaxError = check0(&tokenCnt) ? false : true;
-      //   return;
+      case TokenType::END:
+        cout << "end" << endl;
+        return;
       default: break;
     }
 
@@ -372,7 +340,7 @@ int Asembler::addRelocationABS(Symbol* s, int offset){
 
   for(auto it = relTables.begin(); it != relTables.end(); it++){
     if((*it)->getSection()->getSection() == currSection->getSection()){
-      (*it)->addRelative(offs, relSym->getName(), addend);
+      (*it)->addAbsolute(offs, relSym->getName(), addend);
       return 0;
     }
   }
@@ -619,3 +587,68 @@ void Asembler::handle1csr1gpr(int* tokenCnt, char* charr){
   regs = ((indGpr << 4) | (0x0f & indCsr));
   *(charr+1) = regs;
 }
+
+bool Asembler::handleGlobal(int* tokenCnt){
+  //sym1, sym2, ... symN
+  Token nextToken = tokens[(*tokenCnt)++];
+  string name = nextToken.getText();
+  Symbol* s;
+  while(nextToken.getType() != TokenType::EOL) {
+    s = symbolTable->findSymbol(name);
+    if(s == nullptr) return false;
+    s->setGlobal();
+
+    nextToken = tokens[(*tokenCnt)++]; //pojedi zapetu
+    if(nextToken.getType() == TokenType::EOL) break;
+    nextToken = tokens[(*tokenCnt)++];
+    name = nextToken.getText();
+  }
+  return true;
+}
+
+bool Asembler::handleWord(int* tokenCnt, char* charr){
+  // sym1|lit1, sym2|lit2, ... symN|litN
+  Token nextToken = tokens[(*tokenCnt)++];
+  int val = 0;
+  Symbol* s;
+  while(nextToken.getType() != TokenType::EOL){
+      if(nextToken.getType() == TokenType::DEC) {
+        val = atoi(nextToken.getText().c_str());
+      } else if(nextToken.getType() == TokenType::HEX){
+        val = hexStringToInt(nextToken.getText());
+      } else { //simbol
+        s = symbolTable->findSymbol(nextToken.getText());
+        if(s == nullptr) return false;
+        addRelocationABS(s, 0);
+        val = 0;
+      }
+  
+    charr[0] = *((char*)&val+0); //little-endian
+    charr[1] = *((char*)&val+1);
+    charr[2] = *((char*)&val+2);
+    charr[3] = *((char*)&val+3);
+    write(charr, 4);
+    nextToken = tokens[(*tokenCnt)++]; //pojedi zapetu
+    nextToken = tokens[(*tokenCnt)++];
+  }
+  return true;
+}
+
+void Asembler::handleSkip(int* tokenCnt){
+  Token nextToken = tokens[(*tokenCnt)++];
+  int val;
+  if(nextToken.getType() == TokenType::DEC){
+    val = atoi(nextToken.getText().c_str());
+  } else { //hex
+    val = hexStringToInt(nextToken.getText());
+  }
+
+  fill(0, val);
+}
+
+void Asembler::handleAscii(int* tokenCnt){
+  Token nextToken = tokens[(*tokenCnt)++];
+  string str = nextToken.getText();
+  write(((char*)str.c_str()), str.size());
+}
+

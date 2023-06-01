@@ -32,8 +32,9 @@ public:
   void secondPass();
 
   //getters and setters
-  bool getError();
+  bool const getError();
   void incCounter(int inc);
+  void resetCounter();
   int const getCounter();
 
   //syntax check methods PASS1
@@ -58,8 +59,6 @@ public:
   //section-related functions
   void openSection(string name);
   void closeSection();
-  void openSectionSecondPass(string name);
-  void closeSectionSecondPass();
 
   //utility functions
   int hexStringToInt(string hex);
@@ -67,8 +66,11 @@ public:
   char gprIndex(string gpr);
   char csrIndex(string csr);
 
-  //directive and instruction processing PASS 2
+  //writing methods
   void write(char* chars, int size);
+  void fill(char filler, int size);
+
+  //directive and instruction processing PASS 2
   int addRelocationPCREL(Symbol* s, int offset);
   int addRelocationABS(Symbol* s, int offset);
 
@@ -88,4 +90,11 @@ public:
   bool handle1gpr1indirAdded(int* tokenCnt, char* charr);
   void handle1gpr1csr(int* tokenCnt, char* charr);
   void handle1csr1gpr(int* tokenCnt, char* charr);
+
+  bool handleGlobal(int* tokenCnt);
+  bool handleWord(int* tokenCnt, char* charr);
+  void handleSkip(int* tokenCnt);
+  void handleAscii(int* tokenCnt);
+
+
 };
