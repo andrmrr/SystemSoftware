@@ -187,7 +187,7 @@ void Asembler::secondPass(){
         break;
       case TokenType::STREGINDADD:
         cout << "stregindadd" << endl;
-        syntaxError = handle1gpr1indirAdded(&tokenCnt, cTemp) ? false : true;
+        syntaxError = handle1gpr1indirAddend(&tokenCnt, cTemp) ? false : true;
         write(cTemp, 4);
         break;
       case TokenType::CSRRD:  
@@ -360,7 +360,11 @@ bool Asembler::handleBranchOperand(int* tokenCnt, char* charr, int addrStart){
       cout << "Unidentified symbol!" << endl;
       return false;
     }
-    operand = addRelocationPCREL(s, addrStart);
+    if(s->isAbsolute()){
+      operand = s->getValue();
+    } else {
+      operand = addRelocationABS(s, addrStart);
+    }
   }
   charr[addrStart++] = *((char*)&operand+0); //little-endian
   charr[addrStart++] = *((char*)&operand+1);
@@ -458,7 +462,7 @@ bool Asembler::handle12bitOperand(int* tokenCnt, char* charr){
     operand = atoi(nextToken.getText().c_str());
   } else { //simbol
     Symbol* s = symbolTable->findSymbol(nextToken.getText());
-    if(s == nullptr || s->getSection() != 0){
+    if(s == nullptr || s->getSection() != 1){
       cout << "Unidentified symbol!" << endl;
       return false;
     }
@@ -501,7 +505,11 @@ bool Asembler::handleDataOperand(int* tokenCnt, char* charr){
       cout << "Unidentified symbol!" << endl;
       return false;
     }
-    operand = addRelocationABS(s, addrStart);
+    if(s->isAbsolute()) {
+      operand = s->getValue();
+    } else {
+      operand = addRelocationABS(s, addrStart);
+    }
   }
   charr[addrStart++] = *((char*)&operand+0); //little-endian
   charr[addrStart++] = *((char*)&operand+1);
@@ -533,7 +541,7 @@ void Asembler::handle1gpr1indir(int*tokenCnt, char* charr){
   *(charr+1) = regs;
 }
 
-bool Asembler::handle1gpr1indirAdded(int*tokenCnt, char* charr){
+bool Asembler::handle1gpr1indirAddend(int*tokenCnt, char* charr){
   // %gprS, [%gprD + sym]
   bool status;
   string gprS, gprD;
@@ -619,8 +627,12 @@ bool Asembler::handleWord(int* tokenCnt, char* charr){
       } else { //simbol
         s = symbolTable->findSymbol(nextToken.getText());
         if(s == nullptr) return false;
-        addRelocationABS(s, 0);
-        val = 0;
+        if(s->isAbsolute()) {
+          val = s->getValue();
+        } else {
+          addRelocationABS(s, 0);
+          val = 0;
+        }
       }
   
     charr[0] = *((char*)&val+0); //little-endian

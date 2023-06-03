@@ -16,7 +16,7 @@ public:
   static void initSymbolTable();
   static void deleteInstance();
 
-  Symbol* addAbsolute(string n, int sec);
+  Symbol* addAbsolute(string n, int val);
   Symbol* addSymbol(string n, int sec, int val);
   Symbol* addSection(string n);
 
@@ -26,4 +26,16 @@ public:
   vector<Symbol*> getSections();
   vector<Symbol*> getAllSymbols();
 
+};
+
+class AlreadyDefinedException : public exception {
+  string symbol;
+  public:
+    AlreadyDefinedException(string sym): symbol(sym) {}
+    const char* what() const noexcept override {
+      return "The symbol is already defined: ";
+    }
+    string whatSymbol() const noexcept {
+      return this->what() + symbol;
+    }
 };

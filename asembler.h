@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <exception>
 #include "tokens.h"
 #include "symbolTable.h"
 #include "relocationTable.h"
@@ -57,7 +58,8 @@ public:
   bool checkSymbol(int tokenCnt); // check syntax for a symbol
   int checkLiteral(int* tokenCnt); // check syntax for a hex or dec literal and return the value, -1 if bad syntax
   int checkString(int* tokenCnt); // check syntax for ascii and return the size of the string, -1 if bad syntax
-  bool checkExpr(int* tokenCnt); // check syntax for equ
+  bool checkExpr(int tokenCnt); // check syntax for equ
+  bool handleEqu(int* tokenCnt); //resolve equ directive
   
   //section-related functions
   void openSection(string name);
@@ -90,7 +92,7 @@ public:
   bool handle12bitOperand(int* tokenCnt, char* charr);
   bool handle1gpr1doperand(int* tokenCnt, char* charr);
   void handle1gpr1indir(int* tokenCnt, char* charr);
-  bool handle1gpr1indirAdded(int* tokenCnt, char* charr);
+  bool handle1gpr1indirAddend(int* tokenCnt, char* charr);
   void handle1gpr1csr(int* tokenCnt, char* charr);
   void handle1csr1gpr(int* tokenCnt, char* charr);
 

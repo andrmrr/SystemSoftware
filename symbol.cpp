@@ -9,12 +9,6 @@ ostream& operator<<(ostream& out, SymbolType st) {
 
 int Symbol::globalId = 0;
 
-Symbol::Symbol(string n, int val){
-  this->id = globalId++;
-  this->name = n;
-  this->value = val;
-}
-
 Symbol::Symbol(string n, int sec, int val){
   this->id = globalId++;
   this->name = n;
@@ -67,4 +61,8 @@ string const Symbol::getName(){
 
 bool const Symbol::isSection(){
   return this->type == SymbolType::SECTION;
+}
+
+bool Symbol::isAbsolute(){
+  return this->section == 1;
 }

@@ -4,22 +4,39 @@ Symbol Table
 Num  Value    Size   Type  Bind  Ndx  Name
 0:   00000000    0  NOTYP   LOC  UND  UND
 1:   00000000    0   SCTN  GLOB    1  ABS
-2:   00000000    6   SCTN   LOC    2  prva
-3:   00000006    0  NOTYP   LOC    2  pp
-4:   00000000    b   SCTN   LOC    4  druga
-5:   00000002    0  NOTYP   LOC    4  ff
-6:   0000000a    0  NOTYP  GLOB    4  dd
-7:   00000000    a   SCTN   LOC    7  treca
+2:   00000100    0  NOTYP   LOC    1  a
+3:   00000011    0  NOTYP  GLOB    1  b
+4:   00000000    8   SCTN   LOC    4  prva
+5:   00000008    0  NOTYP   LOC    4  pp
+6:   00000000   17   SCTN   LOC    6  druga
+7:   00000015    0  NOTYP  GLOB    6  ff
+8:   00000016    0  NOTYP  GLOB    6  dd
+9:   00000000   15   SCTN   LOC    9  treca
+a:   00000000   20   SCTN   LOC   10  cetvrta
 
 .prva
-50 e1 b0 0e 60 0f 
+60 0f a0 0f a1 11 a1 02 
 .druga
-40 10 00 63 be 20 f1 02 
-00 00 10 
+83 21 00 01 82 55 84 00 
+00 00 00 00 80 05 10 0f 
+00 00 81 f1 21 00 10 
 .treca
-21 31 f1 00 00 00 00 70 
-55 00 
+92 56 90 05 00 00 00 00 
+91 f1 93 12 1f 00 21 31 
+f1 00 00 00 00 
+.cetvrta
+00 00 00 00 00 00 21 7a 
+65 7a 61 6e 6a 65 00 00 
+00 00 00 00 00 00 ff 00 
+13 00 00 00 11 00 00 00 
 
+.rela.druga
+Offset    Type              Symbol   Addend
+00000008   R_X86_64_32        ff     0
 .rela.treca
 Offset    Type              Symbol   Addend
-00000003  R_X86_64_PC32      prva     2
+00000004   R_X86_64_32        ff     0
+00000011   R_X86_64_32      prva     8
+.rela.cetvrta
+Offset    Type              Symbol   Addend
+00000010   R_X86_64_32        ff     0

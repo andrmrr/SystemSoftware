@@ -30,16 +30,19 @@ SymbolTable::~SymbolTable(){
 }
 
 Symbol* SymbolTable::addAbsolute(string n, int val){
-  Symbol* s = new Symbol(n, val); 
+  if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
+  Symbol* s = new Symbol(n, 1, val); //sec1 = ABS
   symbols.push_back(s);
   return s;
 }
 Symbol* SymbolTable::addSymbol(string n, int sec, int val){
+  if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
   Symbol* s = new Symbol(n, sec, val); 
   symbols.push_back(s);
   return s;
 }
 Symbol* SymbolTable::addSection(string n){
+  if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
   Symbol* s = new Symbol(n, SymbolType::SECTION); 
   symbols.push_back(s);
   return s;

@@ -1,5 +1,9 @@
 .section nz
 .ascii "fasdfs&=+`~"
+.equ a, 0x10
+.equ b, a + 1
+.equ c, b - a
+#.equ d, nz
 #.section nova_sekcija #nista ovo
 #.section druga_sekcija
 #labela:

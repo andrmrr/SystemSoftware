@@ -37,15 +37,21 @@ int main(int argc, char** argv){
   }
 
   if(!parsingError) {
-    Asembler as = Asembler(tokens, "izlaz");
-    cout << "dosli do prvog prolaza" << endl;
-    as.firstPass();
-    cout << "zavrsili prvi prolaz" << endl;
-    if(!as.getError()){
-      cout << "zapoceli drugi prolaz" << endl;
-      as.secondPass();
-      cout << "zavrsili drugi prolaz" << endl;
-      as.createTextFile();
+    try{
+      Asembler as = Asembler(tokens, "izlaz");
+      cout << "dosli do prvog prolaza" << endl;
+      as.firstPass();
+      cout << "zavrsili prvi prolaz" << endl;
+      if(!as.getError()){
+        cout << "zapoceli drugi prolaz" << endl;
+        as.secondPass();
+        cout << "zavrsili drugi prolaz" << endl;
+        as.createTextFile();
+      }
+    } catch(AlreadyDefinedException adex) {
+      cout << adex.whatSymbol() << endl;
+    } catch(...) {
+      cout << "Pakao" << endl;
     }
   }
 

@@ -22,7 +22,6 @@ class Symbol {
   string name;
 
 public:
-  Symbol(string n, int val); // za equ - idu u abs sekciju
   Symbol(string n, int sec, int val); // za regularne simbole
   Symbol(string n, SymbolType t); // za sekcije
 
@@ -37,4 +36,5 @@ public:
   int const getSection();
   string const getName();
   bool const isSection();
+  bool isAbsolute();
 };

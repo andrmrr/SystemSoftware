@@ -53,8 +53,8 @@ void Asembler::createTextFile(){
     vector<Relocation*> relocations = relTable->getRelocations();
     for(auto it = relocations.begin(); it != relocations.end(); it++){
       Relocation* r = *it;
-      txtOutputFile << hex << setfill('0') << setw(8) << r->offset << "  " << setw(13) << r->type << "  "
-        << setfill(' ') << setw(8) << r->symbol << "  " << setw(4) << r->addend << endl;
+      txtOutputFile << hex << setfill('0') << setw(8) << r->offset << "  " << setfill(' ') << setw(12)
+        << r->type << "  " << setw(8) << r->symbol << "  " << setw(4) << r->addend << endl;
     }
   }
 

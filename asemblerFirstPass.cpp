@@ -296,7 +296,10 @@ void Asembler::firstPass(){
         break;
       case TokenType::EQU:
         // cout << "equ dobar!" << endl;
-        syntaxError = checkExpr(&tokenCnt) ? false : true;
+        syntaxError = checkExpr(tokenCnt) ? false : true;
+        if(!syntaxError){
+          syntaxError = handleEqu(&tokenCnt) ? false : true;
+        }
         break;
       case TokenType::END:
         // cout << "end dobar!" << endl;
@@ -314,6 +317,7 @@ void Asembler::firstPass(){
     }
   }
   closeSection();
+  //solve TNS
   cout << "Reda radi" << endl;
 }
 
@@ -616,35 +620,93 @@ int Asembler::checkString(int* tokenCnt){
   } return -1;
 }
 
-bool Asembler::checkExpr(int* tokenCnt){
-  //sym, expr
+bool Asembler::checkExpr(int tokenCnt){
+  //sym, sym/lit [+/- sym/lit]
   Token nextToken;
-  if((*tokenCnt) < tokens.size() - 3) {
-    nextToken = tokens[(*tokenCnt)++];
+  if(tokenCnt < tokens.size() - 3) {
+    nextToken = tokens[tokenCnt++];
     if(nextToken.getType() == TokenType::IDENT){
-      nextToken = tokens[(*tokenCnt)++];
+      nextToken = tokens[tokenCnt++];
       if(nextToken.getType() == TokenType::COMMA){
-        nextToken = tokens[(*tokenCnt)++];
+        nextToken = tokens[tokenCnt++];
         if(Token::isBranchOperand(nextToken.getType())){
-          while(true){
-            if((*tokenCnt) < tokens.size()){
-              nextToken = tokens[(*tokenCnt)++];
-              if(nextToken.getType() == TokenType::EOL) {
-                return true;
-              } else if(nextToken.getType() == TokenType::PLUS || nextToken.getType() == TokenType::MINUS) {
-                if((*tokenCnt) < tokens.size()){
-                  nextToken = tokens[(*tokenCnt)++];
-                  if(Token::isBranchOperand(nextToken.getType())){
-                    continue;
+          nextToken = tokens[tokenCnt++];
+          if(nextToken.getType() == TokenType::EOL) {
+            return true;
+          } else if(nextToken.getType() == TokenType::PLUS || nextToken.getType() == TokenType::MINUS) {
+            if(tokenCnt < tokens.size()-1){
+                nextToken = tokens[tokenCnt++];
+                if(Token::isBranchOperand(nextToken.getType())){
+                  nextToken = tokens[tokenCnt++];
+                  if(nextToken.getType() == TokenType::EOL) {
+                    return true;
                   } else return false;
                 } else return false;
-              } else return false;
             } else return false;
-          }
+          } else return false;       
         } else return false;  
       } else return false;
     } else return false;
   } else return false;
+}
+
+bool Asembler::handleEqu(int* tokenCnt){
+  string sym;
+  int val;
+  Token nextToken = tokens[(*tokenCnt)++];
+  sym = nextToken.getText();
+  tokens[(*tokenCnt)++]; // pojedi zapetu
+
+  nextToken = tokens[(*tokenCnt)++];
+  if(nextToken.getType() == TokenType::HEX){
+    val = hexStringToInt(nextToken.getText());
+  } else if(nextToken.getType() == TokenType::DEC){
+    val = atoi(nextToken.getText().c_str());
+  } else { // symbol
+    Symbol* s = symbolTable->findSymbol(nextToken.getText());
+    if(s == nullptr || !s->isAbsolute()) {
+      cout << "Nedozvoljen operand EQU instrukcije" << endl;
+      return false;
+    } else {
+      val = s->getValue();
+    }
+  }
+
+  nextToken = tokens[(*tokenCnt)++];
+  if(nextToken.getType() == TokenType::PLUS){
+    nextToken = tokens[(*tokenCnt)++];
+    if(nextToken.getType() == TokenType::HEX){
+      val += hexStringToInt(nextToken.getText());
+    } else if(nextToken.getType() == TokenType::DEC){
+      val += atoi(nextToken.getText().c_str());
+    } else { // symbol
+      Symbol* s = symbolTable->findSymbol(nextToken.getText());
+      if(s == nullptr || !s->isAbsolute()) {
+        cout << "Nedozvoljen operand EQU instrukcije" << endl;
+        return false;
+      } else {
+        val += s->getValue();
+      }
+    }  
+  } else if(nextToken.getType() == TokenType::MINUS){
+    nextToken = tokens[(*tokenCnt)++];
+    if(nextToken.getType() == TokenType::HEX){
+      val -= hexStringToInt(nextToken.getText());
+    } else if(nextToken.getType() == TokenType::DEC){
+      val -= atoi(nextToken.getText().c_str());
+    } else { // symbol
+      Symbol* s = symbolTable->findSymbol(nextToken.getText());
+      if(s == nullptr || !s->isAbsolute()) {
+        cout << "Nedozvoljen operand EQU instrukcije" << endl;
+        return false;
+      } else {
+        val -= s->getValue();
+      }
+    }
+  }
+
+  symbolTable->addAbsolute(sym, val);
+  return true;
 }
 
 int Asembler::hexStringToInt(string hex){

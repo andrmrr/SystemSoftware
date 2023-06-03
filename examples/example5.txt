@@ -1,5 +1,8 @@
 #drugo testiranje drugog prolaza
 .global dd, ff
+.global b
+.equ a, 0x100
+.equ b, 0x111 - a
 .section prva
 not %pc
 csrwr %pc, %status
@@ -7,16 +10,16 @@ csrrd %handler, %r1
 csrrd %cause, %r0
 pp: 
 .section druga
+ld [%r1 + a], %r2
 ld [%r5], %r5
 ld $ff, %r0
 ld 0xf10, %r5
 ld %r1, %pc
-ld [%r1 + 0xff], %r2
 ret
 ff:halt
 
 dd: int
-.section treca
+.section a
 st %r6, [%r5]
 st %r5 , ff
 st %r1, %pc
@@ -30,7 +33,7 @@ ret
 .ascii "zezanje"
 halt
 halt
-.word ff, 0x00ff0000, 19
+.word ff, 0x00ff0000, 19, b
 .end
 .skip 11
 
