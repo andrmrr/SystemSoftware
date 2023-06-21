@@ -1,8 +1,0 @@
-Relocatable object file
-
-Symbol Table
-Num  Value    Size   Type  Bind  Ndx  Name
-0:   00000000    0  NOTYP   LOC  UND  UND
-1:   00000000    0   SCTN  GLOB    1  ABS
-
-

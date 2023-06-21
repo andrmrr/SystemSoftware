@@ -101,6 +101,7 @@ public:
   bool handleWord(int* tokenCnt, char* charr);
   void handleSkip(int* tokenCnt);
   void handleAscii(int* tokenCnt);
+  void skipToNewLine(int* tokenCnt);
 
   //output methods
   void createTextFile();

@@ -8,7 +8,6 @@
 using namespace std;
 
 int main(int argc, char** argv){
-  cout << argc << endl;
   if(argc != 2 && argc != 4) {
     cout << "Sintaksa pokretanja asemblera:\nasembler [-o <naziv_izlazne_datoteke>] <naziv_ulazne_datoteke>\n";
     return 1;

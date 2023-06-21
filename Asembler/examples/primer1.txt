@@ -1,0 +1,40 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+0:   00000000    0  NOTYP   LOC  UND  UND
+1:   00000000    0   SCTN  GLOB    1  ABS
+2:   00000100    0  NOTYP   LOC    1  aa
+3:   00000011    0  NOTYP  GLOB    1  bb
+4:   00000000    c   SCTN   LOC    4  prva
+5:   0000000c    0  NOTYP   LOC    4  p
+6:   00000000   1b   SCTN   LOC    6  druga
+7:   00000019    0  NOTYP  GLOB    6  f
+8:   0000001a    0  NOTYP  GLOB    6  d
+9:   00000000   19   SCTN   LOC    9  trecaa
+a:   00000000    a   SCTN   LOC   10  skokovi
+
+.prva
+01 00 00 00 60 0f a0 0f 
+a1 11 a1 02 
+.druga
+02 00 00 00 83 21 00 01 
+82 55 84 00 00 00 00 00 
+80 05 10 0f 00 00 81 f1 
+21 00 10 
+.trecaa
+03 00 00 00 92 56 90 05 
+00 00 00 00 91 f1 93 12 
+1f 00 21 31 f1 00 00 00 
+00 
+.skokovi
+05 00 00 00 30 00 00 0f 
+00 00 
+
+.rela.druga
+Offset    Type              Symbol   Addend
+0000000c   R_X86_64_32         f     0
+.rela.trecaa
+Offset    Type              Symbol   Addend
+00000008   R_X86_64_32         f     0
+00000015   R_X86_64_32      prva     c

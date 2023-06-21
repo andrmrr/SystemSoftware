@@ -279,8 +279,6 @@ void Asembler::createBinaryFile(){
   binOutputFile.write((char*)(&sh_info), sizeof(sh_info));
   binOutputFile.write((char*)(&sh_entsize), sizeof(sh_entsize));
   binOutputFile.seekp(curr_offset);
-
-  cout << "eto" << endl;
 }
 
 int Asembler::numRels(){

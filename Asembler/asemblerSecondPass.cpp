@@ -223,10 +223,10 @@ void Asembler::secondPass(){
         if(printInst) cout << "ascii" << endl;
         handleAscii(&tokenCnt);
         break;
-      // case TokenType::EQU:
-      //   if(printInst) cout << "equ dobar!" << endl;
-      //   syntaxError = checkExpr(&tokenCnt) ? false : true;
-      //   break;
+      case TokenType::EQU:
+        if(printInst) cout << "equ" << endl;
+        skipToNewLine(&tokenCnt);
+        break;
       case TokenType::END:
         if(printInst) cout << "end" << endl;
         return;
@@ -642,6 +642,7 @@ bool Asembler::handleWord(int* tokenCnt, char* charr){
     charr[3] = *((char*)&val+3);
     write(charr, 4);
     nextToken = tokens[(*tokenCnt)++]; //pojedi zapetu
+    if(nextToken.getType() == TokenType::EOL) break;
     nextToken = tokens[(*tokenCnt)++];
   }
   return true;
@@ -665,3 +666,9 @@ void Asembler::handleAscii(int* tokenCnt){
   write(((char*)str.c_str()), str.size());
 }
 
+void Asembler::skipToNewLine(int* tokenCnt){
+  Token nextToken = tokens[(*tokenCnt)++];
+  while(nextToken.getType() != TokenType::EOL){
+    nextToken = tokens[(*tokenCnt)++];
+  }
+}

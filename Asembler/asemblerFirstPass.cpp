@@ -318,7 +318,7 @@ void Asembler::firstPass(){
   }
   closeSection();
   //solve TNS
-  cout << "Reda radi" << endl;
+  //cout << "Reda radi" << endl;
 }
 
 bool Asembler::check0(int* tokenCnt){
