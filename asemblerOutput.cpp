@@ -62,7 +62,7 @@ void Asembler::createTextFile(){
 
 
 void Asembler::createBinaryFile(){
-  string binOutputPath = outputFilePath + ".hex";
+  string binOutputPath = outputFilePath + ".o";
   ofstream binOutputFile(binOutputPath, ios::out | ios::binary);
   int curr_offset, prev_offset;
 
