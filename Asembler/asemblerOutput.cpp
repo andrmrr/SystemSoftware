@@ -133,6 +133,7 @@ void Asembler::createBinaryFile(){
     st_bind = s->isGlobal() ? 1 : 0;
     st_type = s->isSection() ? 1 : 0;
     st_secndx = secTable->findSectionId(symbolTable->findSymbol(s->getSection()));
+    
     st_value = s->getValue();
 
     binOutputFile.write((char*)(&st_name), sizeof(st_name));
@@ -152,7 +153,7 @@ void Asembler::createBinaryFile(){
   sh_offs = prev_offset;
   sh_size = curr_offset - prev_offset;
   sh_link = string_section_index;
-  sh_info = 0x0;
+  sh_info = symbolTable->size()-2; //ne racunamo UND i ABS
   sh_entsize = 0xC;
   binOutputFile.seekp(sec_header_offset + curr_sh * sec_header_entry_size);
   binOutputFile.write((char*)(&sh_strndx), sizeof(sh_strndx));

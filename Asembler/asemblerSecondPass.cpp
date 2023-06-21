@@ -604,7 +604,9 @@ bool Asembler::handleGlobal(int* tokenCnt){
   Symbol* s;
   while(nextToken.getType() != TokenType::EOL) {
     s = symbolTable->findSymbol(name);
-    if(s == nullptr) return false;
+    if(s == nullptr) { //uvezen simbol
+      s = symbolTable->addSymbol(name, 0, 0);
+    }
     s->setGlobal();
 
     nextToken = tokens[(*tokenCnt)++]; //pojedi zapetu

@@ -38,7 +38,7 @@ int SectionTable::findSectionId(Symbol* ss){
       return i;
     }
   }
-  return -1;
+  return -1; // za UND
 }
 
 Section* SectionTable::findSection(Symbol* ss){
