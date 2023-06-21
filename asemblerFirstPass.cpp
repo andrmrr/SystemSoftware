@@ -593,7 +593,7 @@ int Asembler::checkLiteral(int* tokenCnt){
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::HEX || nextToken.getType() == TokenType::DEC){
       if(nextToken.getType() == TokenType::HEX){
-        val = hexStringToInt(nextToken.getText());
+        val = hexStringToInt(nextToken.getText(), true);
       } else {
         val = atoi(nextToken.getText().c_str());
       }
@@ -659,7 +659,7 @@ bool Asembler::handleEqu(int* tokenCnt){
 
   nextToken = tokens[(*tokenCnt)++];
   if(nextToken.getType() == TokenType::HEX){
-    val = hexStringToInt(nextToken.getText());
+    val = hexStringToInt(nextToken.getText(), true);
   } else if(nextToken.getType() == TokenType::DEC){
     val = atoi(nextToken.getText().c_str());
   } else { // symbol
@@ -676,7 +676,7 @@ bool Asembler::handleEqu(int* tokenCnt){
   if(nextToken.getType() == TokenType::PLUS){
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::HEX){
-      val += hexStringToInt(nextToken.getText());
+      val += hexStringToInt(nextToken.getText(), true);
     } else if(nextToken.getType() == TokenType::DEC){
       val += atoi(nextToken.getText().c_str());
     } else { // symbol
@@ -691,7 +691,7 @@ bool Asembler::handleEqu(int* tokenCnt){
   } else if(nextToken.getType() == TokenType::MINUS){
     nextToken = tokens[(*tokenCnt)++];
     if(nextToken.getType() == TokenType::HEX){
-      val -= hexStringToInt(nextToken.getText());
+      val -= hexStringToInt(nextToken.getText(), true);
     } else if(nextToken.getType() == TokenType::DEC){
       val -= atoi(nextToken.getText().c_str());
     } else { // symbol
@@ -709,10 +709,11 @@ bool Asembler::handleEqu(int* tokenCnt){
   return true;
 }
 
-int Asembler::hexStringToInt(string hex){
+int Asembler::hexStringToInt(string hex, bool prefix){
   int val = 0;
   char current;
-  for(int i = 2; i < hex.size(); i++){
+  int i = (prefix) ? 2 : 0;
+  for(i; i < hex.size(); i++){
     current = hex[i];
     val *= 16;
     switch(current){

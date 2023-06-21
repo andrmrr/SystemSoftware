@@ -31,3 +31,7 @@ Symbol* RelocationTable::getSection(){
 vector<Relocation*> RelocationTable::getRelocations(){
   return this->relocations;
 }
+
+int RelocationTable::size(){
+  return this->relocations.size();
+}

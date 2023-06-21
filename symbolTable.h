@@ -11,6 +11,8 @@ class SymbolTable{
   ~SymbolTable();
   
 public:
+  int size() const;
+
   //creation and destruction of the instance
   static SymbolTable* getInstance();
   static void initSymbolTable();

@@ -22,6 +22,7 @@ void Asembler::fill(char filler, int size){
 }
 
 void Asembler::secondPass(){
+  bool printInst = false;
   secondPassInit();
   int tokenCnt = 0;
   Token token, nextToken;
@@ -33,214 +34,214 @@ void Asembler::secondPass(){
   while(tokenCnt < tokens.size()){
     token = tokens[tokenCnt++];
 
-    // cout << "Token " << token.getType() << endl;
+    // if(printInst) cout << "Token " << token.getType() << endl;
     *cTemp = Token::getOPCodeBinary(token.getType());
     switch(token.getType()) {
       case TokenType::HALT:
-        cout << "halt" << endl;
+        if(printInst) cout << "halt" << endl;
         write(cTemp, 1);
         break;
       case TokenType::INT:
-        cout << "int" << endl;
+        if(printInst) cout << "int" << endl;
         write(cTemp, 1);
         break;
       case TokenType::IRET:
-        cout << "iret" << endl;
+        if(printInst) cout << "iret" << endl;
         write(cTemp, 1);
         break;
       case TokenType::CALL: 
-        cout << "call" << endl;
+        if(printInst) cout << "call" << endl;
         syntaxError = handleBranchOperand(&tokenCnt, cTemp, 1) ? false : true;
         write(cTemp, 5);
         break;
       case TokenType::RET:
-        cout << "ret " << endl;
+        if(printInst) cout << "ret " << endl;
         write(cTemp, 1);
         break;
       case TokenType::JMP: 
-        cout << "jmp" << endl;
+        if(printInst) cout << "jmp" << endl;
         syntaxError = handleBranchOperand(&tokenCnt, cTemp, 1) ? false : true;
         write(cTemp, 5);
         break;
       case TokenType::BEQ:
-        cout << "beq" << endl;
+        if(printInst) cout << "beq" << endl;
         handleCondition(&tokenCnt, cTemp);
         syntaxError = handleBranchOperand(&tokenCnt, cTemp, 2) ? false : true;
         write(cTemp, 6);
         break;
       case TokenType::BNE:
-        cout << "bne" << endl;
+        if(printInst) cout << "bne" << endl;
         handleCondition(&tokenCnt, cTemp);
         syntaxError = handleBranchOperand(&tokenCnt, cTemp, 2) ? false : true;
         write(cTemp, 6);
         break;
       case TokenType::BGT:
-        cout << "bgt" << endl;
+        if(printInst) cout << "bgt" << endl;
         handleCondition(&tokenCnt, cTemp);
         syntaxError = handleBranchOperand(&tokenCnt, cTemp, 2) ? false : true;
         write(cTemp, 6);
         break;
       case TokenType::PUSH:
-        cout << "push" << endl;
+        if(printInst) cout << "push" << endl;
         handle1gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::POP:
-        cout << "pop" << endl;
+        if(printInst) cout << "pop" << endl;
         handle1gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::XCHG:
-        cout << "xchg" << endl;
+        if(printInst) cout << "xchg" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::ADD:
-        cout << "add" << endl;
+        if(printInst) cout << "add" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::SUB:
-        cout << "sub" << endl;
+        if(printInst) cout << "sub" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::MUL: 
-        cout << "mul" << endl;
+        if(printInst) cout << "mul" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::DIV: 
-        cout << "div" << endl;
+        if(printInst) cout << "div" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::NOT: 
-        cout << "not" << endl;
+        if(printInst) cout << "not" << endl;
         handle1gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::AND: 
-        cout << "and" << endl;
+        if(printInst) cout << "and" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::OR: 
-        cout << "or" << endl;
+        if(printInst) cout << "or" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::XOR: 
-        cout << "xor" << endl;
+        if(printInst) cout << "xor" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::SHL: 
-        cout << "shl" << endl;
+        if(printInst) cout << "shl" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::SHR: 
-        cout << "shr" << endl;
+        if(printInst) cout << "shr" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::LDMEMDIR:
-        cout << "ldmemdir" << endl;
+        if(printInst) cout << "ldmemdir" << endl;
         syntaxError = handle1doperand1gpr(&tokenCnt, cTemp) ? false : true;
         write(cTemp, 6);
         break;
       case TokenType::LDREGDIR:
-        cout << "ldregdir" << endl;
+        if(printInst) cout << "ldregdir" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::LDREGIND:
-        cout << "ldregind" << endl;
+        if(printInst) cout << "ldregind" << endl;
         handle1indir1gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::LDREGINDADD:
-        cout << "ldregindadd" << endl;
+        if(printInst) cout << "ldregindadd" << endl;
         syntaxError = handle1indirAddend1gpr(&tokenCnt, cTemp) ? false : true;
         write(cTemp, 4);
         break;
       case TokenType::LDIMMED:
-        cout << "ldimmed" << endl;
+        if(printInst) cout << "ldimmed" << endl;
         syntaxError = handle1lit1gpr(&tokenCnt, cTemp) ? false : true;
         write(cTemp, 6);
         break;
       case TokenType::STMEMDIR: 
-        cout << "stmemdir" << endl;
+        if(printInst) cout << "stmemdir" << endl;
         syntaxError = handle1gpr1doperand(&tokenCnt, cTemp) ? false : true;
         write(cTemp, 6);
         break;
       case TokenType::STREGDIR:
-        cout << "stregdir" << endl;
+        if(printInst) cout << "stregdir" << endl;
         handle2gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::STREGIND:
-        cout << "stregind" << endl;
+        if(printInst) cout << "stregind" << endl;
         handle1gpr1indir(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::STREGINDADD:
-        cout << "stregindadd" << endl;
+        if(printInst) cout << "stregindadd" << endl;
         syntaxError = handle1gpr1indirAddend(&tokenCnt, cTemp) ? false : true;
         write(cTemp, 4);
         break;
       case TokenType::CSRRD:  
-        cout << "csrrd" << endl;
+        if(printInst) cout << "csrrd" << endl;
         handle1csr1gpr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::CSRWR: 
-        cout << "csrwr" << endl;
+        if(printInst) cout << "csrwr" << endl;
         handle1gpr1csr(&tokenCnt, cTemp);
         write(cTemp, 2);
         break;
       case TokenType::GLOBAL: 
-        cout << "global" << endl;
+        if(printInst) cout << "global" << endl;
         syntaxError = handleGlobal(&tokenCnt) ? false : true;
         break;
       case TokenType::SECTION:
-        cout << "section" << endl;
+        if(printInst) cout << "section" << endl;
         resetCounter();
         nextToken = tokens[tokenCnt++];
         currSection = symbolTable->findSymbol(nextToken.getText());
         break;
       case TokenType::WORD:
-        cout << "word" << endl;
+        if(printInst) cout << "word" << endl;
         syntaxError = handleWord(&tokenCnt, cTemp) ? false : true;
         break;
       case TokenType::SKIP:
-        cout << "skip" << endl;
+        if(printInst) cout << "skip" << endl;
         handleSkip(&tokenCnt);
         break;
       case TokenType::ASCII:
-        cout << "ascii" << endl;
+        if(printInst) cout << "ascii" << endl;
         handleAscii(&tokenCnt);
         break;
       // case TokenType::EQU:
-      //   cout << "equ dobar!" << endl;
+      //   if(printInst) cout << "equ dobar!" << endl;
       //   syntaxError = checkExpr(&tokenCnt) ? false : true;
       //   break;
       case TokenType::END:
-        cout << "end" << endl;
+        if(printInst) cout << "end" << endl;
         return;
       default: break;
     }
 
     if(syntaxError){
       //uradi nesto
-      //cout << "GRESKA PRI PARSIRANJU PRI DRUGOM PROLAZU" << endl;
+      //if(printInst) cout << "GRESKA PRI PARSIRANJU PRI DRUGOM PROLAZU" << endl;
       error = true;
       break;
     }
   }
   free(cTemp);
-  cout << "Opet cisto reda radi" << endl;
+  if(printInst) cout << "Opet cisto reda radi" << endl;
 }
 
 string Asembler::int12ToHexNoPrefix(int num){
@@ -351,7 +352,7 @@ bool Asembler::handleBranchOperand(int* tokenCnt, char* charr, int addrStart){
   uint32_t operand = 0;
   Token nextToken = tokens[(*tokenCnt)++];
   if(nextToken.getType() == TokenType::HEX){
-    operand = hexStringToInt(nextToken.getText());
+    operand = hexStringToInt(nextToken.getText(), true);
   } else if(nextToken.getType() == TokenType::DEC){
     operand = atoi(nextToken.getText().c_str());
   } else { //simbol
@@ -457,7 +458,7 @@ bool Asembler::handle12bitOperand(int* tokenCnt, char* charr){
   int operand = 0;
   Token nextToken = tokens[(*tokenCnt)++];
   if(nextToken.getType() == TokenType::HEX){
-    operand = hexStringToInt(nextToken.getText());
+    operand = hexStringToInt(nextToken.getText(), true);
   } else if(nextToken.getType() == TokenType::DEC){
     operand = atoi(nextToken.getText().c_str());
   } else { //simbol
@@ -496,7 +497,7 @@ bool Asembler::handleDataOperand(int* tokenCnt, char* charr){
   uint32_t operand = 0;
   Token nextToken = tokens[(*tokenCnt)++];
   if(nextToken.getType() == TokenType::HEX){
-    operand = hexStringToInt(nextToken.getText());
+    operand = hexStringToInt(nextToken.getText(), true);
   } else if(nextToken.getType() == TokenType::DEC){
     operand = atoi(nextToken.getText().c_str());
   } else { //simbol
@@ -623,7 +624,7 @@ bool Asembler::handleWord(int* tokenCnt, char* charr){
       if(nextToken.getType() == TokenType::DEC) {
         val = atoi(nextToken.getText().c_str());
       } else if(nextToken.getType() == TokenType::HEX){
-        val = hexStringToInt(nextToken.getText());
+        val = hexStringToInt(nextToken.getText(), true);
       } else { //simbol
         s = symbolTable->findSymbol(nextToken.getText());
         if(s == nullptr) return false;
@@ -652,7 +653,7 @@ void Asembler::handleSkip(int* tokenCnt){
   if(nextToken.getType() == TokenType::DEC){
     val = atoi(nextToken.getText().c_str());
   } else { //hex
-    val = hexStringToInt(nextToken.getText());
+    val = hexStringToInt(nextToken.getText(), true);
   }
 
   fill(0, val);

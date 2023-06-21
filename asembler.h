@@ -30,6 +30,7 @@ public:
   ~Asembler();
 
   void secondPassInit();
+  int numRels();
 
   //focal methods
   void firstPass();
@@ -66,7 +67,7 @@ public:
   void closeSection();
 
   //utility functions
-  int hexStringToInt(string hex);
+  int hexStringToInt(string hex, bool prefix);
   string int12ToHexNoPrefix(int i);
   char gprIndex(string gpr);
   char csrIndex(string csr);

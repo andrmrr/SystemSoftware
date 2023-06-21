@@ -47,6 +47,7 @@ int main(int argc, char** argv){
         as.secondPass();
         cout << "zavrsili drugi prolaz" << endl;
         as.createTextFile();
+        as.createBinaryFile();
       }
     } catch(AlreadyDefinedException adex) {
       cout << adex.whatSymbol() << endl;

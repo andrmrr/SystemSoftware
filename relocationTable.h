@@ -28,6 +28,8 @@ public:
   RelocationTable(Symbol* s) : section(s) {}
   ~RelocationTable();
 
+  int size();
+
   Relocation* addAbsolute(int offs, string sym, int a);
   Relocation* addRelative(int offs, string sym, int a);
 

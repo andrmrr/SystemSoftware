@@ -19,7 +19,7 @@ ret
 ff:halt
 
 dd: int
-.section a
+.section treca
 st %r6, [%r5]
 st %r5 , ff
 st %r1, %pc
@@ -27,7 +27,11 @@ st %r2, [%r1 + 0x1f]
 ret
 beq %r1, %r15, pp
 
-.section cetvrta
+.section skokovi
+jmp 0x0000f0000
+
+
+.section cetvrtaa
 .skip 6
 ret
 .ascii "zezanje"

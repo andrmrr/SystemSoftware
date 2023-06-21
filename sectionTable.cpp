@@ -32,6 +32,15 @@ Section* SectionTable::addSection(Symbol* ss){
   return s;
 }
 
+int SectionTable::findSectionId(Symbol* ss){
+  for(int i = 0; i < sections.size(); i ++){
+    if(sections[i]->sectionSymbol->getName() == ss->getName()){
+      return i;
+    }
+  }
+  return -1;
+}
+
 Section* SectionTable::findSection(Symbol* ss){
   for(auto it = sections.begin(); it != sections.end(); it++){
     if((*it)->sectionSymbol == ss){
@@ -59,5 +68,7 @@ vector<Section*> SectionTable::getAllSections(){
   return sections;
 }
 
-
+int SectionTable::size() const {
+  return sections.size() - 1; // ABS does not count
+}
 

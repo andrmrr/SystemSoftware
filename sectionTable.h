@@ -17,7 +17,9 @@ public:
   static void initSectionTable();
   static void deleteInstance();
 
+  int size() const;
   Section* findSection(Symbol* ss);
+  int findSectionId(Symbol* ss);
   Section* addSection(Symbol* ss);
   void writeToSection(Symbol* ss, char* chars, int size);
   void fillSection(Symbol* ss, char filler, int size);

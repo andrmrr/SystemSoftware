@@ -29,6 +29,10 @@ SymbolTable::~SymbolTable(){
   }
 }
 
+int SymbolTable::size() const {
+  return symbols.size();
+}
+
 Symbol* SymbolTable::addAbsolute(string n, int val){
   if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
   Symbol* s = new Symbol(n, 1, val); //sec1 = ABS
