@@ -131,9 +131,9 @@ void Asembler::createBinaryFile(){
     st_name = names.size();
     names += s->getName() + "0";
     st_bind = s->isGlobal() ? 1 : 0;
-    st_type = s->isSection() ? 1 : 0;
+    st_type = s->isSection() ? 3 : 0;
     st_secndx = secTable->findSectionId(symbolTable->findSymbol(s->getSection()));
-    
+
     st_value = s->getValue();
 
     binOutputFile.write((char*)(&st_name), sizeof(st_name));
