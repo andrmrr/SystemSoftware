@@ -1,9 +1,10 @@
 #include "linker.h"
 
 
-Linker::Linker(vector<string> ifnames, bool is_hex) {
+Linker::Linker(vector<string> ifnames, bool is_hex, vector<string> places) {
   this->input_file_names = ifnames;
   this->hex_output = is_hex;
+  this->section_places = places;
   SymbolTable::initSymbolTable();
   symbolTable = SymbolTable::getInstance();
   SectionTable::initSectionTable();
@@ -21,6 +22,7 @@ Linker::~Linker() {
 
 void Linker::linkHex(){
   load();
+  setSectionAdresses();
   fixRelocations();
 }
 
@@ -307,9 +309,101 @@ int Linker::getSectionOffset(Symbol* s, string file){
     }
     offs += (sec->getData()[i]).size();
   }
-  return -1;
+  return offs;
 }
 
 
+void Linker::setSectionAdresses(){
+  Section* sec, *startsAtZero = nullptr;
+  vector<u_int32_t> segLow = {0};
+  vector<u_int32_t> segHigh = {0xFFFFFFFF};
+  string secName, saddr;
+  u_int32_t addr, size;
+  u_int32_t low, high;
+  int delim;
+  bool cantfit;
+  //upisivanje zadatih adresa
+  for(auto it = section_places.begin(); it != section_places.end(); it++){
+    cantfit = true;
+    delim = it->find('@');
+    secName = it->substr(0, delim);
+    addr = stoul(it->substr(delim+1));
+    sec = secTable->findSection(symbolTable->findSymbol(secName));
+    size = sec->getTotalSize();
+    sec->setAddress(addr);
+    if(addr == 0) startsAtZero = sec;
+    for(auto itl = segLow.begin(), ith = segHigh.begin(); itl != segLow.end(), ith != segHigh.end();){
+      low = *itl;
+      high = *ith;
+      if(addr >= low && addr+size-1 <= high){
+        itl = segLow.erase(itl);
+        ith = segHigh.erase(ith);
+        if(addr > low){
+          itl = segLow.insert(itl, low);
+          itl++;
+          segHigh.insert(ith, addr-1);
+          ith++;
+        }
+        if(addr+size-1 < high){
+          segLow.insert(itl, addr+size);
+          itl++;
+          segHigh.insert(ith, high);
+          ith++;
+        }
+        cantfit = false;
+        break;
+      } else {
+        itl++;
+        ith++;
+      }
+    }
+    if(cantfit) throw AddressOverlap(secName);
+  }
 
+  low = segLow.back();
+  high = segHigh.back();
+  // segLow.clear();
+  // segHigh.clear();
+  // segLow.push_back(low);
+  // segHigh.push_back(high);
+
+  //upisivanje adresa za preostale
+  vector<Section*> sections = secTable->getAllSections();
+  for(auto it = sections.begin(); it != sections.end(); it++){
+    sec = *it;
+    if(sec == startsAtZero || sec->getAddress() > 0 || sec->getTotalSize() == 0) continue;
+    size = sec->getTotalSize();
+    if(high-low+1 >= size){
+      sec->setAddress(low);
+      low += size;
+    } else {
+      throw AddressOverlap(sec->getSectionSymbol()->getName());
+    }
+    // cantfit = true;
+    // sec = *it;
+    // size = sec->getTotalSize();
+    // for(auto itl = segLow.begin(), ith = segHigh.begin(); itl != segLow.end(), ith != segHigh.end();){
+    //   low = *itl;
+    //   high = *ith;
+    //   if(high-low+1 >= size){
+    //     sec->setAddress(low);
+    //     itl = segLow.erase(itl);
+    //     ith = segHigh.erase(ith);
+    //     if(addr+size-1 < high){
+    //       segLow.insert(itl, addr+size);
+    //       itl++;
+    //       segHigh.insert(ith, high);
+    //       ith++;
+    //     }
+    //     cantfit = false;
+    //     break;
+    //   } else {
+    //     itl++;
+    //     ith++;
+    //   }
+    // }
+    // if(cantfit) throw AddressOverlap(secName);
+  }
+  cout << "Zadali adrese" << endl;
+}
 

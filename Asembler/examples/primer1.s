@@ -27,6 +27,7 @@ st %r6, [%r5]
 st %r5 , f
 st %r1, %pc
 st %r2, [%r1 + 0x1f]
+ld bb, %pc
 ret
 beq %r1, %r15, p
 

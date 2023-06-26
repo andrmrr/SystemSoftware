@@ -49,3 +49,14 @@ class UnresolvedSymbolError : public SymbolError {
       return "The symbol: " + symbol + this->what();
     }
 };
+
+class AddressOverlap : public SymbolError {
+  public:
+    AddressOverlap(string sym) : SymbolError(sym) {}
+    const char* what() const noexcept override {
+      return " overlaps with another section!\n";
+    }
+    string whatSymbol() const noexcept override {
+      return "Section: " + symbol + this->what();
+    }
+};

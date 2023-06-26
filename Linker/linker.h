@@ -31,19 +31,21 @@ class Linker {
   vector<string> input_file_names;
   string output_file_name;
   bool hex_output;
+  vector<string> section_places;
 
   SymbolTable* symbolTable;
   SectionTable* secTable;
   vector<RelocationTable*> relTables;
 
 public:
-  Linker(vector<string> ifnames, bool is_hex);
+  Linker(vector<string> ifnames, bool is_hex, vector<string> places);
   ~Linker();
 
   //focal functions
-  void linkHex(); // za komandu hex
+  void linkHex();
   void load();
   void fixRelocations();
+  void setSectionAdresses();
 
   //utility functions
   int getSectionOffset(Symbol* s, string file);

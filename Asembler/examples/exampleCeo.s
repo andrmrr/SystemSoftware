@@ -1,6 +1,6 @@
 #drugo testiranje drugog prolaza
 .global dd, ff
-.global d
+.global d, bb #uvezeni simboli
 .global b
 .equ a, 0x100
 .equ b, 0x111 - a
@@ -14,6 +14,7 @@ pp:
 ld [%r1 + a], %r2
 ld [%r5], %r5
 ld $d, %r0
+ld bb, %pc
 ld 0xf10, %r5
 ld %r1, %pc
 ret

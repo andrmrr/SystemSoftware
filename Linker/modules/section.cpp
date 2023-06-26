@@ -12,6 +12,14 @@
 //   }
 // }
 
+uint32_t Section::getTotalSize(){
+  int sz = 0;
+  for(auto it = data.begin(); it != data.end(); it++){
+    sz += it->size();
+  }
+  return sz;
+}
+
 vector<vector<char>> Section::getData(){
   return this->data;
 }
@@ -33,10 +41,10 @@ void Section::addData(vector<char> newData, string f){
   this->files.push_back(f);
 }
 
-int Section::getAddress(){
+uint32_t Section::getAddress(){
   return this->address;
 }
 
-void Section::setAddress(int addr){
+void Section::setAddress(uint32_t addr){
   this->address = addr;
 }

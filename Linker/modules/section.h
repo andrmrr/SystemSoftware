@@ -7,7 +7,7 @@ class Section{
   Symbol* sectionSymbol;
   vector<vector<char>> data;
   vector<string> files;
-  int address;
+  uint32_t address;
 
   Section() = delete;
   Section(Symbol* ss) : sectionSymbol(ss), address(0) {}
@@ -18,10 +18,11 @@ class Section{
 
   friend class SectionTable;
 public:
+  uint32_t getTotalSize();
   vector<vector<char>> getData();
   void setData(vector<char> newData, int ndx);
   vector<string> getFiles();
   Symbol* getSectionSymbol();
-  int getAddress();
-  void setAddress(int addr);
+  uint32_t getAddress();
+  void setAddress(uint32_t addr);
 };

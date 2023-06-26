@@ -7,7 +7,7 @@ Num  Value    Size   Type  Bind  Ndx  Name
 6:   00000000   1b   SCTN   LOC    6  druga
 7:   00000019    0  NOTYP  GLOB    6  f
 8:   0000001a    0  NOTYP  GLOB    6  d
-9:   00000000   19   SCTN   LOC    9  trecaa
+9:   00000000   1f   SCTN   LOC    9  trecaa
 a:   00000000    a   SCTN   LOC   10  skokovi
 
 .prva
@@ -21,8 +21,8 @@ a1 11 a1 02
 .trecaa
 03 00 00 00 92 56 90 05 
 00 00 00 00 91 f1 93 12 
-1f 00 21 31 f1 00 00 00 
-00 
+1f 00 80 0f 11 00 00 00 
+21 31 f1 00 00 00 00 
 .skokovi
 05 00 00 00 30 00 00 0f 
 00 00 
@@ -33,4 +33,4 @@ Offset    Type              Symbol   Addend
 .rela.trecaa
 Offset    Type              Symbol   Addend
 00000008   R_X86_64_32         f     0
-00000015   R_X86_64_32      prva     c
+0000001b   R_X86_64_32      prva     c
