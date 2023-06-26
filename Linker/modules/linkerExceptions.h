@@ -17,15 +17,35 @@ class InputFileError : public std::exception {
     }
 };
 
+class SymbolError : public exception {
+  protected:
+    string symbol;
+  public:
+    SymbolError(string sym): symbol(sym) {}
+    virtual const char* what() const noexcept {
+      return "A symbol error occured!\n";
+    }
+    virtual string whatSymbol() const noexcept = 0;
+};
 
-// class BadFileType : public exception {
-//   string symbol;
-//   public:
-//     AlreadyDefinedException(string sym): symbol(sym) {}
-//     const char* what() const noexcept override {
-//       return "The symbol is already defined: ";
-//     }
-//     string whatSymbol() const noexcept {
-//       return this->what() + symbol;
-//     }
-// };
+class MultipleDefinitionsError : public SymbolError {
+  public:
+    MultipleDefinitionsError(string sym) : SymbolError(sym) {}
+    const char* what() const noexcept override {
+      return "There are multiple definitions of the symbol: ";
+    }
+    string whatSymbol() const noexcept override {
+      return this->what() + symbol + "\n";
+    }
+};
+
+class UnresolvedSymbolError : public SymbolError {
+  public:
+    UnresolvedSymbolError(string sym) : SymbolError(sym) {}
+    const char* what() const noexcept override {
+      return " is not defined!\n";
+    }
+    string whatSymbol() const noexcept override {
+      return "The symbol: " + symbol + this->what();
+    }
+};

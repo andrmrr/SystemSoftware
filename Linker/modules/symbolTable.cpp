@@ -47,9 +47,9 @@ Symbol* SymbolTable::addSymbol(string n, int sec, int val, string file){
   return s;
 }
 
-Symbol* SymbolTable::addSection(string n, string file){
+Symbol* SymbolTable::addSection(string n, int sec, string file){
   //if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
-  Symbol* s = new Symbol(n, SymbolType::SECTION, file); 
+  Symbol* s = new Symbol(n, SymbolType::SECTION, sec, file); 
   symbols.push_back(s);
   return s;
 }

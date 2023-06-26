@@ -1,8 +1,9 @@
 #include "linker.h"
 
 
-Linker::Linker(vector<string> ifnames) {
+Linker::Linker(vector<string> ifnames, bool is_hex) {
   this->input_file_names = ifnames;
+  this->hex_output = is_hex;
   //outputFilePath = outf;
   //error = false;
   //lcounter = 0;
@@ -13,7 +14,9 @@ Linker::Linker(vector<string> ifnames) {
 
   SectionTable::initSectionTable();
   secTable = SectionTable::getInstance();
-  vector<Symbol*> secSymbols = symbolTable->getSections();
+  secTable->addEmptySection(new Symbol("ABS", SymbolType::SECTION, 0, ""));
+
+  // vector<Symbol*> secSymbols = symbolTable->getSections();
   // for(auto it = secSymbols.begin(); it != secSymbols.end(); it++){
   //   secTable->addSection(*it);
   //   relTables.push_back(new RelocationTable(*it));
@@ -21,7 +24,11 @@ Linker::Linker(vector<string> ifnames) {
 }
 
 Linker::~Linker() {
-  
+  // for(auto it = relTables.begin(); it != relTables.end(); it ++){
+  //   delete (*it);
+  // }
+  this->symbolTable->deleteInstance();
+  this->secTable->deleteInstance();
 }
 
 void Linker::link(){
@@ -30,9 +37,16 @@ void Linker::link(){
 }
 
 void Linker::solveReferences(){
+  vector<string> defined;
+  vector<string> unresolved;
+  vector<Symbol*> curr_file_symbols;
+  // Symbol* dummySymbol = new Symbol("DUMMY", SymbolType::NOTYP, "");
   for(string ifname: input_file_names){
+    curr_file_symbols.clear();
+    // curr_file_symbols.push_back(dummySymbol); // za UND
+    // curr_file_symbols.push_back(dummySymbol); // za ABS
     ifstream inputBinFile(ifname, ios_base::in | ios_base::binary);
-    int curr_offset, prev_offset;
+    int curr_offset, curr_sh;
 
     uint32_t sec_header_offset;
     uint32_t flags;
@@ -52,7 +66,8 @@ void Linker::solveReferences(){
     inputBinFile.seekg(sec_header_offset + string_section_index * sec_header_entry_size + SH_OFFS_OFFS);
     inputBinFile.read((char*)&string_section_offset, sizeof(string_section_offset));
 
-    curr_offset = sec_header_offset + 0*sec_header_entry_size;
+    curr_sh = 0;
+    curr_offset = sec_header_offset + curr_sh * sec_header_entry_size;
 
     //Tabela simbola je prva sekcija
     inputBinFile.seekg(curr_offset);
@@ -87,8 +102,8 @@ void Linker::solveReferences(){
     uint8_t st_type;
     uint16_t st_secndx; // r.b. u section_header, 0 za ABS, -1 za UND
     uint32_t st_value;
-    string name;
     Symbol* s;
+    string name;
     char* nameTemp = (char*)malloc(100*sizeof(char));
     for(int i = 0; i < sh_info; i ++){
       inputBinFile.seekg(curr_offset + i * sh_entsize);
@@ -100,16 +115,92 @@ void Linker::solveReferences(){
       inputBinFile.seekg(string_section_offset + st_name);
       inputBinFile.get(nameTemp, 100, '0');
       name = string(nameTemp);
-      if(st_type == 3 || st_type == 1) {
-        symbolTable->addSection(name, ifname);
-      } else {
+      if(st_type == 3 || st_type == 1) { // ako je sekcija
+        if(symbolTable->findSymbol(name) != nullptr) continue; //vec je definisana ta sekcija
+        s = symbolTable->addSection(name, st_secndx, ifname);
+        curr_file_symbols.push_back(s);
+      } else { // ako je globalni simbol koji nije sekcija
+        for(auto it = defined.begin(); it != defined.end(); it++){
+            if(it->compare(name) == 0) {
+              throw MultipleDefinitionsError(name);
+            }
+          }
         s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
         if(st_bind == 1) s->setGlobal();
+        curr_file_symbols.push_back(s);
+        if(st_secndx == -1){
+          unresolved.push_back(name);
+        } else {
+          for(auto it = unresolved.begin(); it != unresolved.end(); it++){
+            if(it->compare(name) == 0) {
+              unresolved.erase(it);
+            }
+          }
+        }
       }
+    }
+    curr_sh++;
+    curr_offset = sec_header_offset + curr_sh * sec_header_entry_size;
+
+    //ucitavanje regularnih sekcija
+    vector<char> secData;
+    int currFileSectionId = 1;
+    while(1){
+      inputBinFile.seekg(curr_offset + SH_TYPE_OFFS);
+      inputBinFile.read((char*)(&sh_type), sizeof(sh_type));
+      if(sh_type != 1) { // prosli smo sve regularne sekcije
+        inputBinFile.seekg(curr_offset);
+        break;
+      }
+      inputBinFile.seekg(curr_offset + SH_OFFS_OFFS);
+      inputBinFile.read((char*)(&sh_offs), sizeof(sh_offs));
+      inputBinFile.seekg(curr_offset + SH_SIZE_OFFS);
+      inputBinFile.read((char*)(&sh_size), sizeof(sh_size));
+      inputBinFile.seekg(curr_offset + SH_STRNDX_OFFS);
+      inputBinFile.read((char*)(&sh_strndx), sizeof(sh_strndx));
+      inputBinFile.seekg(string_section_offset + sh_strndx);
+      inputBinFile.get(nameTemp, 100, '0');
+      name = string(nameTemp);
+
+      inputBinFile.seekg(sh_offs);
+      secData = vector<char>(sh_size, 0);
+      inputBinFile.read((char*)(&secData[0]), sh_size);
+      int sectionId = secTable->addSection(symbolTable->findSymbol(name), secData);
+      // //Trazimo indeks nove sekcije u tabeli simbola ulaznog fajla
+      // for(int i = 0; i < curr_file_symbols.size(); i ++){
+      //   Symbol *ts = curr_file_symbols[i];
+      //   if(ts->getName() == name) {
+      //     ts->setSize(sh_size);
+      //     currFileSectionId = i;
+      //     break;
+      //   }
+      // }
+      //Postavljamo polje section za sve simbole iz ove sekcije na indeks te sekcije u novoj tabeli simbola
+      for(auto it = curr_file_symbols.begin(); it != curr_file_symbols.end();){
+        Symbol *ts = *it;
+        if(ts->getSection() == currFileSectionId) {
+          ts->setSection(sectionId);
+          it = curr_file_symbols.erase(it);
+        } else {
+          it++;
+        }
+      }
+
+      currFileSectionId++;
+      secData.clear();
+      curr_sh++;
+      curr_offset = sec_header_offset + curr_sh * sec_header_entry_size;
     }
     free(nameTemp);
     cout << "Prosli jedan fajl" << endl;
   }
+  if(this->hex_output){
+    if(!unresolved.empty()){
+      // free(dummySymbol);
+      throw UnresolvedSymbolError(unresolved[0]);
+    }
+  }
+  // free(dummySymbol);
 }
 
 void Linker::solveRelocations() {

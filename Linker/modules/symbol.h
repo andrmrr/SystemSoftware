@@ -24,7 +24,7 @@ class Symbol {
 
 public:
   Symbol(string n, int sec, int val, string f); // za regularne simbole
-  Symbol(string n, SymbolType t, string f); // za sekcije
+  Symbol(string n, SymbolType t, int sec, string f); // za sekcije
 
   // setters and getters
   void setGlobal();
@@ -35,6 +35,7 @@ public:
   int getSize();
   SymbolType getType();
   int const getSection();
+  void setSection(int secId);
   string const getName();
   bool const isSection();
   bool isAbsolute();

@@ -26,10 +26,26 @@ SectionTable::~SectionTable(){
   }
 }
 
-Section* SectionTable::addSection(Symbol* ss){
-  Section* s = new Section(ss);
-  sections.push_back(s);
-  return s;
+int SectionTable::addSection(Symbol* ss, vector<char> newData){
+  Section* s = this->findSection(ss);
+  if(s == nullptr) {
+    s = new Section(ss);
+    this->sections.push_back(s);
+    s->addData(newData);
+    return this->sections.size()-1;
+  } else {
+    s->addData(newData);
+    for(int i = 0; i < this->sections.size(); i ++){
+      if(this->sections[i] == s) return i;
+    }
+    return -1;
+  }
+}
+
+int SectionTable::addEmptySection(Symbol* ss){
+    Section* s = new Section(ss);
+    sections.push_back(s);
+    return this->sections.size()-1;
 }
 
 int SectionTable::findSectionId(Symbol* ss){
@@ -50,19 +66,19 @@ Section* SectionTable::findSection(Symbol* ss){
   return nullptr;
 }
 
-void SectionTable::writeToSection(Symbol* ss, char* chars, int size){
-  Section* section = findSection(ss);
-  if(section != nullptr){
-    section->write(chars, size);
-  }
-}
+// void SectionTable::writeToSection(Symbol* ss, char* chars, int size){
+//   Section* section = findSection(ss);
+//   if(section != nullptr){
+//     section->write(chars, size);
+//   }
+// }
 
-void SectionTable::fillSection(Symbol* ss, char filler, int size){
-  Section* section = findSection(ss);
-  if(section != nullptr){
-    section->fill(filler, size);
-  }
-}
+// void SectionTable::fillSection(Symbol* ss, char filler, int size){
+//   Section* section = findSection(ss);
+//   if(section != nullptr){
+//     section->fill(filler, size);
+//   }
+// }
 
 vector<Section*> SectionTable::getAllSections(){
   return sections;

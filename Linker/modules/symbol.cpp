@@ -17,10 +17,10 @@ Symbol::Symbol(string n, int sec, int val, string f){
   this->file = f;
 }
 
-Symbol::Symbol(string n,  SymbolType t, string f){
+Symbol::Symbol(string n, SymbolType t, int sec, string f){
   this->id = globalId++;
   this->name = n;
-  this->section = id;
+  this->section = sec;
   this->type = t;
   this->file = f;
 }
@@ -55,6 +55,10 @@ SymbolType Symbol::getType(){
 
 int const Symbol::getSection(){
   return this->section;
+}
+
+void Symbol::setSection(int secId){
+  this->section = secId;
 }
 
 string const Symbol::getName(){

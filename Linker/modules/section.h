@@ -5,16 +5,17 @@
 
 class Section{
   Symbol* sectionSymbol;
-  vector<char> data;
+  vector<vector<char>> data;
 
   Section() = delete;
   Section(Symbol* ss) : sectionSymbol(ss) {}
 
-  void write(char* chars, int size);
-  void fill(char filler, int size);
+  // void write(char* chars, int size);
+  // void fill(char filler, int size);
+  void addData(vector<char> newData);
 
   friend class SectionTable;
 public:
-  vector<char> getData();
+  vector<vector<char>> getData();
   Symbol* getSectionSymbol();
 };

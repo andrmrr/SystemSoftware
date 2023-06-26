@@ -14,6 +14,8 @@ void Asembler::createTextFile(){
   vector<Symbol*> symbols = symbolTable->getAllSymbols();
   for(auto it = symbols.begin(); it != symbols.end(); it++){
     Symbol* s = *it;
+    if(s->getId() == 0 || s->getId() == 1) continue; //und i abs se ne izvoze
+    if(!s->isGlobal() && !s->isSection()) continue; // izvoze se samo globalni simboli i sekcije
     string bind = (s->isGlobal()) ? "GLOB" : "LOC";
     string ndx = (s->getSection() == 0) ? "UND" : to_string(s->getSection());
     txtOutputFile << s->getId() << ":  " << " " << setfill('0') << setw(8)  << hex << s->getValue()
@@ -126,8 +128,10 @@ void Asembler::createBinaryFile(){
   uint32_t st_value;
   //Symbol Table
   int sym_tab_sh_entry = curr_sh;
+  int cnt_exported = 0;
   for(Symbol* s : symbolTable->getAllSymbols()){
     if(s->getId() == 0 || s->getId() == 1) continue; //und i abs se ne izvoze
+    if(!s->isGlobal() && !s->isSection()) continue; // izvoze se samo globalni simboli i sekcije
     st_name = names.size();
     names += s->getName() + "0";
     st_bind = s->isGlobal() ? 1 : 0;
@@ -141,6 +145,7 @@ void Asembler::createBinaryFile(){
     binOutputFile.write((char*)(&st_type), sizeof(st_type));
     binOutputFile.write((char*)(&st_secndx), sizeof(st_secndx));
     binOutputFile.write((char*)(&st_value), sizeof(st_value));
+    cnt_exported++;
   }
   prev_offset = curr_offset;
   curr_offset = binOutputFile.tellp();
@@ -153,7 +158,7 @@ void Asembler::createBinaryFile(){
   sh_offs = prev_offset;
   sh_size = curr_offset - prev_offset;
   sh_link = string_section_index;
-  sh_info = symbolTable->size()-2; //ne racunamo UND i ABS
+  sh_info = cnt_exported;
   sh_entsize = 0xC;
   binOutputFile.seekp(sec_header_offset + curr_sh * sec_header_entry_size);
   binOutputFile.write((char*)(&sh_strndx), sizeof(sh_strndx));
@@ -187,7 +192,7 @@ void Asembler::createBinaryFile(){
     sh_type = 0x1;
     sh_addr = 0x0;
     sh_offs = prev_offset;
-    sh_size = curr_offset - prev_offset;
+    sh_size = curr_offset - prev_offset - (4-rem); //ne racunamo padding
     sh_link = 0x0;
     sh_info = 0x0;
     sh_entsize = 0x0;

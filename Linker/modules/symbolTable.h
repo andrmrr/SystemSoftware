@@ -20,7 +20,7 @@ public:
 
   // Symbol* addAbsolute(string n, int val);
   Symbol* addSymbol(string n, int sec, int val, string file);
-  Symbol* addSection(string n, string file);
+  Symbol* addSection(string n, int sec, string file);
 
   //record methods
   Symbol* findSymbol(string name);

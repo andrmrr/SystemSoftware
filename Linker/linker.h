@@ -30,13 +30,14 @@ using namespace std;
 class Linker {
   vector<string> input_file_names;
   string output_file_name;
+  bool hex_output;
 
   SymbolTable* symbolTable;
   SectionTable* secTable;
   vector<RelocationTable*> relTables;
 
 public:
-  Linker(vector<string> ifnames);
+  Linker(vector<string> ifnames, bool is_hex);
   ~Linker();
 
   //focal functions
