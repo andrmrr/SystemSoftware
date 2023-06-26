@@ -19,9 +19,10 @@ public:
 
   int size() const;
   Section* findSection(Symbol* ss);
+  Section* getSection(int id);
   int findSectionId(Symbol* ss);
-  int addSection(Symbol* ss, vector<char> newData);
-  int addEmptySection(Symbol* ss);
+  int addSection(Symbol* ss, string file, vector<char> newData);
+  int addEmptySection(Symbol* ss, string file);
   // void writeToSection(Symbol* ss, char* chars, int size);
   // void fillSection(Symbol* ss, char filler, int size);
   vector<Section*> getAllSections();

@@ -24,6 +24,10 @@ Relocation* RelocationTable::addRelative(int offs, string sym, int a){
   return r;
 }
 
+string RelocationTable::getFile(){
+  return this->file;
+}
+
 Symbol* RelocationTable::getSection(){
   return this->section;
 }

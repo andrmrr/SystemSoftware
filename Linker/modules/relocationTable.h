@@ -34,6 +34,7 @@ public:
   Relocation* addAbsolute(int offs, string sym, int a);
   Relocation* addRelative(int offs, string sym, int a);
 
+  string getFile();
   Symbol* getSection();
   vector<Relocation*> getRelocations();
 

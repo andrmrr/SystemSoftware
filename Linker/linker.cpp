@@ -4,23 +4,11 @@
 Linker::Linker(vector<string> ifnames, bool is_hex) {
   this->input_file_names = ifnames;
   this->hex_output = is_hex;
-  //outputFilePath = outf;
-  //error = false;
-  //lcounter = 0;
-  //currSection = nullptr;
   SymbolTable::initSymbolTable();
   symbolTable = SymbolTable::getInstance();
-
-
   SectionTable::initSectionTable();
   secTable = SectionTable::getInstance();
-  secTable->addEmptySection(new Symbol("ABS", SymbolType::SECTION, 0, ""));
-
-  // vector<Symbol*> secSymbols = symbolTable->getSections();
-  // for(auto it = secSymbols.begin(); it != secSymbols.end(); it++){
-  //   secTable->addSection(*it);
-  //   relTables.push_back(new RelocationTable(*it));
-  // }
+  secTable->addEmptySection(new Symbol("ABS", SymbolType::SECTION, 0, ""), "");
 }
 
 Linker::~Linker() {
@@ -31,16 +19,17 @@ Linker::~Linker() {
   this->secTable->deleteInstance();
 }
 
-void Linker::link(){
-  solveReferences();
-  solveRelocations();
+void Linker::linkHex(){
+  load();
+  fixRelocations();
 }
 
-void Linker::solveReferences(){
+void Linker::load(){
   vector<string> defined;
   vector<string> unresolved;
   vector<Symbol*> curr_file_symbols;
   vector<Symbol*> curr_file_symbols2;
+  char* nameTemp = (char*)malloc(100*sizeof(char));
   for(string ifname: input_file_names){
     curr_file_symbols.clear();
     curr_file_symbols2.clear();
@@ -103,7 +92,6 @@ void Linker::solveReferences(){
     uint32_t st_value;
     Symbol* s;
     string name;
-    char* nameTemp = (char*)malloc(100*sizeof(char));
     for(int i = 0; i < sh_info; i ++){
       inputBinFile.seekg(curr_offset + i * sh_entsize);
       inputBinFile.read((char*)(&st_name), sizeof(st_name));
@@ -115,9 +103,14 @@ void Linker::solveReferences(){
       inputBinFile.get(nameTemp, 100, '0');
       name = string(nameTemp);
       if(st_type == 3 || st_type == 1) { // ako je sekcija
-        if(symbolTable->findSymbol(name) != nullptr) continue; //vec je definisana ta sekcija
+        s = symbolTable->findSymbol(name);
+        if(s != nullptr) { //vec je definisana ta sekcija
+          curr_file_symbols2.push_back(s); //ubacuje se ovde da bismo brojali elemente tabele simbola zbog relokacionih zapisa
+          continue;
+        }
         s = symbolTable->addSection(name, st_secndx, ifname);
         curr_file_symbols.push_back(s);
+        curr_file_symbols2.push_back(s);
       } else { // ako je globalni simbol koji nije sekcija
         for(auto it = defined.begin(); it != defined.end(); it++){
             if(it->compare(name) == 0) {
@@ -127,6 +120,7 @@ void Linker::solveReferences(){
         s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
         if(st_bind == 1) s->setGlobal();
         curr_file_symbols.push_back(s);
+        curr_file_symbols2.push_back(s);
         if(st_secndx == -1){
           unresolved.push_back(name);
         } else {
@@ -140,7 +134,6 @@ void Linker::solveReferences(){
     }
     curr_sh++;
     curr_offset = sec_header_offset + curr_sh * sec_header_entry_size;
-    curr_file_symbols2 = vector<Symbol*>(curr_file_symbols);
 
     //ucitavanje regularnih sekcija
     vector<char> secData;
@@ -166,7 +159,7 @@ void Linker::solveReferences(){
       secData = vector<char>(sh_size, 0);
       inputBinFile.read((char*)(&secData[0]), sh_size);
       //Postavljamo polje section za sve simbole iz ove sekcije na indeks te sekcije u novoj tabeli simbola
-      int sectionId = secTable->addSection(symbolTable->findSymbol(name), secData);
+      int sectionId = secTable->addSection(symbolTable->findSymbol(name), ifname, secData);
       for(auto it = curr_file_symbols.begin(); it != curr_file_symbols.end();){
         Symbol *ts = *it;
         if(ts->getSection() == currFileSectionId) {
@@ -235,9 +228,9 @@ void Linker::solveReferences(){
       curr_offset = sec_header_offset + curr_sh * sec_header_entry_size;
     }
 
-    free(nameTemp);
-    cout << "Prosli jedan fajl" << endl;
+    cout << "Procitan fajl: " << ifname << endl;
   }
+  free(nameTemp);
   if(this->hex_output){
     if(!unresolved.empty()){
       throw UnresolvedSymbolError(unresolved[0]);
@@ -245,6 +238,78 @@ void Linker::solveReferences(){
   }
 }
 
-void Linker::solveRelocations() {
-
+void Linker::fixRelocations() {
+  vector<Section*> sections = secTable->getAllSections();
+  Section* currSection;
+  vector<RelocationTable*> currRTables;
+  for(auto it = sections.begin(); it != sections.end(); it++){
+    currSection = *it;
+    currRTables.clear();
+    for(auto it2 = relTables.begin(); it2 != relTables.end(); it2++){
+      if((*it2)->getSection()->getName() == currSection->getSectionSymbol()->getName()){
+        currRTables.push_back(*it2);
+      }
+    }
+    if(currRTables.empty()) continue;
+    RelocationTable* rt;
+    vector<char> sectionData;
+    int localSecNdx;
+    int sectionOffset; //ovo je offset u odnosu na sekciju simbola u rel. zapisu
+    for(int i = 0; i < currRTables.size(); i++){
+      rt = currRTables[i];
+      for(int j = 0; j < currSection->getData().size(); j ++){
+        if(currSection->getFiles()[j] == rt->getFile()){
+          sectionData = currSection->getData()[j];
+          localSecNdx = j;
+          break;
+        }
+      }
+      Relocation* r;
+      Symbol* rs;
+      uint32_t val;
+      vector<Relocation*> rTemp = rt->getRelocations();
+      for(auto it3 = rTemp.begin(); it3 != rTemp.end(); it3++){
+        r = *it3;
+        rs = symbolTable->findSymbol(r->symbol);
+        sectionOffset = getSectionOffset(rs, rt->getFile());
+        if(r->type == RelocationType::R_X86_64_32){
+          if(rs->isGlobal()){
+            val = sectionOffset + rs->getValue() + r->addend;
+          } else {
+            val = sectionOffset + r->addend;
+          }
+          sectionData[r->offset+0] = *((char*)&val+0); //little-endian
+          sectionData[r->offset+1] = *((char*)&val+1);
+          sectionData[r->offset+2] = *((char*)&val+2);
+          sectionData[r->offset+3] = *((char*)&val+3);
+        } else { 
+          // ne koristi se pc rel
+        }
+      }
+      currSection->setData(sectionData, localSecNdx);
+    }
+  }
+  cout << "Relocations relocated..." << endl;
 }
+
+int Linker::getSectionOffset(Symbol* s, string file){
+  Section* sec = secTable->getSection(s->getSection());
+  int offs = sec->getAddress();
+  for(int i = 0; i < sec->getData().size(); i ++){
+    if(s->isSection()){ // za sekcije kojih moze biti vise
+      if(sec->getFiles()[i] == file){
+        return offs;
+      }
+    } else { // za simbole koji su jedinstveni
+      if(sec->getFiles()[i] == s->getFile()){
+        return offs;
+      }
+    }
+    offs += (sec->getData()[i]).size();
+  }
+  return -1;
+}
+
+
+
+

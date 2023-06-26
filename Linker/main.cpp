@@ -14,7 +14,7 @@ int main(int argc, char** argv){
   try{
     //izvrsavanje linkera
     Linker ld(names, true);
-    ld.solveReferences();
+    ld.linkHex();
 
   } catch(const SymbolError& se){
     cout << se.whatSymbol();

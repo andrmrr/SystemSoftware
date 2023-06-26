@@ -26,15 +26,15 @@ SectionTable::~SectionTable(){
   }
 }
 
-int SectionTable::addSection(Symbol* ss, vector<char> newData){
+int SectionTable::addSection(Symbol* ss, string file, vector<char> newData){
   Section* s = this->findSection(ss);
   if(s == nullptr) {
     s = new Section(ss);
     this->sections.push_back(s);
-    s->addData(newData);
+    s->addData(newData, file);
     return this->sections.size()-1;
   } else {
-    s->addData(newData);
+    s->addData(newData, file);
     for(int i = 0; i < this->sections.size(); i ++){
       if(this->sections[i] == s) return i;
     }
@@ -42,7 +42,7 @@ int SectionTable::addSection(Symbol* ss, vector<char> newData){
   }
 }
 
-int SectionTable::addEmptySection(Symbol* ss){
+int SectionTable::addEmptySection(Symbol* ss, string file){
     Section* s = new Section(ss);
     sections.push_back(s);
     return this->sections.size()-1;
@@ -64,6 +64,10 @@ Section* SectionTable::findSection(Symbol* ss){
     }
   }
   return nullptr;
+}
+
+Section* SectionTable::getSection(int ndx){
+  return sections[ndx];
 }
 
 // void SectionTable::writeToSection(Symbol* ss, char* chars, int size){

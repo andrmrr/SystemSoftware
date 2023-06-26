@@ -192,7 +192,8 @@ void Asembler::createBinaryFile(){
     sh_type = 0x1;
     sh_addr = 0x0;
     sh_offs = prev_offset;
-    sh_size = curr_offset - prev_offset - (4-rem); //ne racunamo padding
+    sh_size = curr_offset - prev_offset;
+    if(rem > 0) sh_size -= (4-rem); //ne racunamo padding
     sh_link = 0x0;
     sh_info = 0x0;
     sh_entsize = 0x0;

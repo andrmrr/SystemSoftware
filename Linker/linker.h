@@ -41,7 +41,10 @@ public:
   ~Linker();
 
   //focal functions
-  void link(); // za komandu hex
-  void solveReferences();
-  void solveRelocations();
+  void linkHex(); // za komandu hex
+  void load();
+  void fixRelocations();
+
+  //utility functions
+  int getSectionOffset(Symbol* s, string file);
 };

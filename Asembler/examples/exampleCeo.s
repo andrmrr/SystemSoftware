@@ -13,7 +13,7 @@ pp:
 .section druga
 ld [%r1 + a], %r2
 ld [%r5], %r5
-ld $ff, %r0
+ld $d, %r0
 ld 0xf10, %r5
 ld %r1, %pc
 ret
