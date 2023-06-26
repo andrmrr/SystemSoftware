@@ -220,7 +220,7 @@ void Asembler::createBinaryFile(){
       r_offset = r->offset;
       r_info_symbol = (r->type == RelocationType::R_X86_64_32) ? 11 : 2; //ABS->11, PC->2
       r_info_symbol <<= 16;
-      r_info_symbol |= (uint32_t)symbolTable->findSymbol(r->symbol)->getId() - 2;
+      r_info_symbol |= (uint32_t)symbolTable->getFinalId(r->symbol);
       r_addend = r->addend;
 
       binOutputFile.write((char*)(&r_offset), sizeof(r_offset));

@@ -21,11 +21,12 @@ struct Relocation {
 class RelocationTable {
 
   Symbol* section;
+  string file;
   vector<Relocation*> relocations;
 
   
 public:
-  RelocationTable(Symbol* s) : section(s) {}
+  RelocationTable(Symbol* s, string f) : section(s), file(f) {}
   ~RelocationTable();
 
   int size();

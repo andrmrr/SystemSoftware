@@ -70,6 +70,18 @@ Symbol* SymbolTable::findSymbol(int id){
   return nullptr;
 }
 
+int SymbolTable::getFinalId(string name){
+  int cnt = 0;
+  Symbol* tmp;
+  for(auto it = this->symbols.begin(); it != this->symbols.end(); it++){
+    tmp = *it;
+    if(tmp->getName() == name) return cnt;
+    if(tmp->getId() > 1 && (tmp->isGlobal() || tmp->isSection())) cnt++;
+  }
+    
+  return -1;
+}
+
 vector<Symbol*> SymbolTable::getSections(){
   vector<Symbol*> sections;
   for(auto it = symbols.begin(); it != symbols.end(); it++){

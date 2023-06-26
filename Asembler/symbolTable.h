@@ -25,6 +25,7 @@ public:
   //record methods
   Symbol* findSymbol(string name);
   Symbol* findSymbol(int id);
+  int getFinalId(string name);
   vector<Symbol*> getSections();
   vector<Symbol*> getAllSymbols();
 
