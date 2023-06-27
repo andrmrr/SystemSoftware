@@ -5,7 +5,11 @@ Linker::Linker(vector<string> ifnames, bool is_hex, vector<string> places, strin
   this->input_file_names = ifnames;
   this->hex_output = is_hex;
   this->section_places = places;
-  this->output_file_name = of;
+  if(of.empty()){
+      this->output_file_name = "output.txt";
+  } else {
+    this->output_file_name = of;
+  }
   SymbolTable::initSymbolTable();
   symbolTable = SymbolTable::getInstance();
   SectionTable::initSectionTable();
@@ -34,7 +38,7 @@ void Linker::linkHex(){
   setSectionAdresses();
   solveRelocations();
   hexOutputTxt();
-  hexOutput();
+  // hexOutput();
 }
 
 void Linker::linkRel(){
@@ -259,7 +263,7 @@ void Linker::load(){
       curr_offset = sec_header_offset + curr_sh * sec_header_entry_size;
     }
 
-    cout << "Procitan fajl: " << ifname << endl;
+    // cout << "Procitan fajl: " << ifname << endl;
   }
   free(nameTemp);
   if(this->hex_output){
@@ -320,7 +324,7 @@ void Linker::solveRelocations() {
       currSection->setData(sectionData, localSecNdx);
     }
   }
-  cout << "Relocations relocated..." << endl;
+  // cout << "Relocations solved..." << endl;
 }
 
 int Linker::getSectionOffset(Symbol* s, string file){
@@ -405,7 +409,7 @@ void Linker::setSectionAdresses(){
       throw AddressOverlap(sec->getSectionSymbol()->getName());
     }
   }
-  cout << "Zadali adrese" << endl;
+  // cout << "Zadali adrese" << endl;
 }
 
 void Linker::fixRelocations(){
@@ -441,5 +445,5 @@ void Linker::fixRelocations(){
       }
     }
   }
-  cout << "Relocations fixed..." << endl;
+  // cout << "Relocations fixed..." << endl;
 }

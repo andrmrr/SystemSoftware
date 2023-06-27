@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cstring>
 #include "symbolTable.h"
 #include "sectionTable.h"
 #include "relocationTable.h"

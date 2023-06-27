@@ -9,7 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/linker",
-      "args": ["examples/exampleCeo.s"],
+      "args": [ "-place=prva@3840", "test_files/example6.o", "test_files/exampleCeo.o", "-hex", "test_files/primer1.o", "-place=trecaa@256"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
