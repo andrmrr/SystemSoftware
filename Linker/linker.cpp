@@ -1,10 +1,11 @@
 #include "linker.h"
 
 
-Linker::Linker(vector<string> ifnames, bool is_hex, vector<string> places) {
+Linker::Linker(vector<string> ifnames, bool is_hex, vector<string> places, string of) {
   this->input_file_names = ifnames;
   this->hex_output = is_hex;
   this->section_places = places;
+  this->output_file_name = of;
   SymbolTable::initSymbolTable();
   symbolTable = SymbolTable::getInstance();
   SectionTable::initSectionTable();
@@ -20,10 +21,27 @@ Linker::~Linker() {
   this->secTable->deleteInstance();
 }
 
+void Linker::link(){
+  if(this->hex_output){
+    linkHex();
+  } else {
+    linkRel();
+  }
+}
+
 void Linker::linkHex(){
   load();
   setSectionAdresses();
+  solveRelocations();
+  hexOutputTxt();
+  hexOutput();
+}
+
+void Linker::linkRel(){
+  load();
   fixRelocations();
+  relOutputTxt();
+  relOutputBin();
 }
 
 void Linker::load(){
@@ -111,24 +129,35 @@ void Linker::load(){
           continue;
         }
         s = symbolTable->addSection(name, st_secndx, ifname);
+        // s = symbolTable->addSection(name, ifname);
         curr_file_symbols.push_back(s);
         curr_file_symbols2.push_back(s);
       } else { // ako je globalni simbol koji nije sekcija
         for(auto it = defined.begin(); it != defined.end(); it++){
-            if(it->compare(name) == 0) {
-              throw MultipleDefinitionsError(name);
-            }
+          if(it->compare(name) == 0) {
+            throw MultipleDefinitionsError(name);
           }
-        s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
-        if(st_bind == 1) s->setGlobal();
-        curr_file_symbols.push_back(s);
+        }
+        s = symbolTable->findSymbol(name);
+        if(s == nullptr){ // samo za definisane fajlove
+          s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
+          if(st_bind == 1) s->setGlobal();
+          curr_file_symbols.push_back(s);
+        } else if(s->getSection() == 65535 || s->getSection() == -1){ // ako vec postoji nedefinisani simbol u tabeli simbola
+          s->setValue(st_value);
+          s->setSection(st_secndx);
+          s->setFile(ifname);
+          if(st_bind == 1) s->setGlobal();
+        }
         curr_file_symbols2.push_back(s);
-        if(st_secndx == -1){
+        if(st_secndx == -1 || st_secndx == 65535){
           unresolved.push_back(name);
         } else {
-          for(auto it = unresolved.begin(); it != unresolved.end(); it++){
+          for(auto it = unresolved.begin(); it != unresolved.end();){
             if(it->compare(name) == 0) {
-              unresolved.erase(it);
+              it = unresolved.erase(it);
+            } else {
+              it++;
             }
           }
         }
@@ -240,7 +269,7 @@ void Linker::load(){
   }
 }
 
-void Linker::fixRelocations() {
+void Linker::solveRelocations() {
   vector<Section*> sections = secTable->getAllSections();
   Section* currSection;
   vector<RelocationTable*> currRTables;
@@ -362,12 +391,8 @@ void Linker::setSectionAdresses(){
 
   low = segLow.back();
   high = segHigh.back();
-  // segLow.clear();
-  // segHigh.clear();
-  // segLow.push_back(low);
-  // segHigh.push_back(high);
 
-  //upisivanje adresa za preostale
+  //postavljanje adresa ostalih sekcija
   vector<Section*> sections = secTable->getAllSections();
   for(auto it = sections.begin(); it != sections.end(); it++){
     sec = *it;
@@ -379,31 +404,42 @@ void Linker::setSectionAdresses(){
     } else {
       throw AddressOverlap(sec->getSectionSymbol()->getName());
     }
-    // cantfit = true;
-    // sec = *it;
-    // size = sec->getTotalSize();
-    // for(auto itl = segLow.begin(), ith = segHigh.begin(); itl != segLow.end(), ith != segHigh.end();){
-    //   low = *itl;
-    //   high = *ith;
-    //   if(high-low+1 >= size){
-    //     sec->setAddress(low);
-    //     itl = segLow.erase(itl);
-    //     ith = segHigh.erase(ith);
-    //     if(addr+size-1 < high){
-    //       segLow.insert(itl, addr+size);
-    //       itl++;
-    //       segHigh.insert(ith, high);
-    //       ith++;
-    //     }
-    //     cantfit = false;
-    //     break;
-    //   } else {
-    //     itl++;
-    //     ith++;
-    //   }
-    // }
-    // if(cantfit) throw AddressOverlap(secName);
   }
   cout << "Zadali adrese" << endl;
 }
 
+void Linker::fixRelocations(){
+  vector<Section*> sections = secTable->getAllSections();
+  Section* currSection;
+  vector<RelocationTable*> currRTables;
+  for(auto it = sections.begin(); it != sections.end(); it++){
+    currSection = *it;
+    currRTables.clear();
+    for(auto it2 = relTables.begin(); it2 != relTables.end(); it2++){
+      if((*it2)->getSection()->getName() == currSection->getSectionSymbol()->getName()){
+        currRTables.push_back(*it2);
+      }
+    }
+    if(currRTables.empty()) continue;
+    RelocationTable* rt;
+    int oldSectionOffset; //ovo je offset stare sekcije u odnosu na pocetak nove
+    for(int i = 0; i < currRTables.size(); i++){
+      rt = currRTables[i];
+      Relocation* r;
+      Symbol* rs;
+      uint32_t val;
+      vector<Relocation*> rTemp = rt->getRelocations();
+      for(auto it3 = rTemp.begin(); it3 != rTemp.end(); it3++){
+        r = *it3;
+        rs = symbolTable->findSymbol(r->symbol);
+        oldSectionOffset = getSectionOffset(rt->getSection(), rt->getFile());
+        if(r->type == RelocationType::R_X86_64_32){
+          r->offset += oldSectionOffset;
+        } else { 
+          // ne koristi se pc rel
+        }
+      }
+    }
+  }
+  cout << "Relocations fixed..." << endl;
+}

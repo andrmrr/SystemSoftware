@@ -25,11 +25,13 @@ class Symbol {
 public:
   Symbol(string n, int sec, int val, string f); // za regularne simbole
   Symbol(string n, SymbolType t, int sec, string f); // za sekcije
+  Symbol(string n, SymbolType t, string f); // za sekcije
 
   // setters and getters
   void setGlobal();
   bool isGlobal();
   void setSize(int sz);
+  void setValue(int val);
   int getValue();
   int getId();
   int getSize();

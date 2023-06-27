@@ -41,15 +41,19 @@ int SymbolTable::size() const {
 // }
 
 Symbol* SymbolTable::addSymbol(string n, int sec, int val, string file){
-  //if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
   Symbol* s = new Symbol(n, sec, val, file); 
   symbols.push_back(s);
   return s;
 }
 
 Symbol* SymbolTable::addSection(string n, int sec, string file){
-  //if(findSymbol(n) != nullptr) throw AlreadyDefinedException(n);
   Symbol* s = new Symbol(n, SymbolType::SECTION, sec, file); 
+  symbols.push_back(s);
+  return s;
+}
+
+Symbol* SymbolTable::addSection(string n, string file){
+  Symbol* s = new Symbol(n, SymbolType::SECTION, file); 
   symbols.push_back(s);
   return s;
 }

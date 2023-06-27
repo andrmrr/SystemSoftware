@@ -19,6 +19,9 @@ uint32_t Section::getTotalSize(){
   }
   return sz;
 }
+vector<char> Section::getDataPart(int ndx){
+  return data[ndx];
+}
 
 vector<vector<char>> Section::getData(){
   return this->data;

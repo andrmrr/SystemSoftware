@@ -8,8 +8,11 @@ int main(int argc, char** argv){
 
   vector<string> names;
   names.push_back("test_files/example6.o");
-  names.push_back("test_files/primer1.o");
   names.push_back("test_files/exampleCeo.o");
+  names.push_back("test_files/primer1.o");
+  // names.push_back("test_files/unresolved.o");
+
+  // names.push_back("test_files/relFile.o");
 
   vector<string> places;
   places.push_back("prva@3840"); //0x0F00
@@ -18,10 +21,15 @@ int main(int argc, char** argv){
   places.push_back("treca@0");
   // places.push_back("cetvrtaa@110");
 
+  // string outputFile = "test_files/relFile.o";
+  // string outputFile = "test_files/relFileOut.o";
+  string outputFile = "test_files/hexFile.hex";
+  bool isHex = true;
+
   try{
     //izvrsavanje linkera
-    Linker ld(names, true, places);
-    ld.linkHex();
+    Linker ld(names, isHex, places, outputFile);
+    ld.link();
 
   } catch(const SymbolError& se){
     cout << se.whatSymbol();

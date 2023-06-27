@@ -20,6 +20,7 @@ class Section{
 public:
   uint32_t getTotalSize();
   vector<vector<char>> getData();
+  vector<char> getDataPart(int ndx);
   void setData(vector<char> newData, int ndx);
   vector<string> getFiles();
   Symbol* getSectionSymbol();

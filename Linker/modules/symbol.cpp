@@ -25,6 +25,14 @@ Symbol::Symbol(string n, SymbolType t, int sec, string f){
   this->file = f;
 }
 
+Symbol::Symbol(string n, SymbolType t, string f){
+  this->id = globalId++;
+  this->name = n;
+  this->section = id;
+  this->type = t;
+  this->file = f;
+}
+
 void Symbol::setGlobal(){
   this->global = true;
 }
@@ -39,6 +47,10 @@ void Symbol::setSize(int sz){
 
 int Symbol::getValue(){
   return this->value;
+}
+
+void Symbol::setValue(int val){
+  this->value = val;
 }
 
 int Symbol::getId(){

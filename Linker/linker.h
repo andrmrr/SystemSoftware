@@ -38,15 +38,26 @@ class Linker {
   vector<RelocationTable*> relTables;
 
 public:
-  Linker(vector<string> ifnames, bool is_hex, vector<string> places);
+  Linker(vector<string> ifnames, bool is_hex, vector<string> places, string of);
   ~Linker();
 
   //focal functions
+  void link();
   void linkHex();
+  void linkRel();
   void load();
-  void fixRelocations();
+  //functions for hex output
   void setSectionAdresses();
+  void solveRelocations();
+  void hexOutput();
+  void hexOutputTxt();
+  //functions for relocatable output
+  void fixRelocations();
+  void relOutputTxt();
+  void relOutputBin();
 
   //utility functions
   int getSectionOffset(Symbol* s, string file);
+  vector<RelocationTable*> getSimilarRelTables(string secName);
+  int numRels();
 };
