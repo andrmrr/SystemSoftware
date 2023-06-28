@@ -4,7 +4,7 @@
 using namespace std;
 
 int main(int argc, char** argv){
-  cout << "Linker" << endl;
+  // cout << "Linker" << endl;
 
   vector<string> inputFiles;
   vector<string> places;

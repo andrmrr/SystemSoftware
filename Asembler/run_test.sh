@@ -1,2 +1,1 @@
-g++ -o test test.cpp
-./test
+./asembler -o test_a/main.o test_a/main.s

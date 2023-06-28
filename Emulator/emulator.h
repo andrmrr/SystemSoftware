@@ -12,7 +12,6 @@ class Emulator{
 public:
   Emulator(string ifName);
   ~Emulator();
-  void  interpret();
   void emulate();
 
 };

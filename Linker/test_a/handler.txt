@@ -1,0 +1,35 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000    0  NOTYP  GLOB  UND  isr_timer
+3:   00000000    0  NOTYP  GLOB  UND  isr_terminal
+4:   00000000    0  NOTYP  GLOB  UND  isr_software
+5:   00000000   48   SCTN   LOC    5  my_handler
+6:   00000000    0  NOTYP  GLOB    5  handler
+
+.my_handler
+81 e0 1f fc 81 e0 2f fc 
+90 12 00 00 92 2f 00 40 
+39 f1 20 58 92 2f 00 34 
+39 f1 20 4c 92 2f 00 28 
+39 f1 20 40 93 2e 00 04 
+93 1e 00 04 11 00 00 00 
+21 f0 00 2c 38 f0 00 24 
+21 f0 00 1c 38 f0 00 1c 
+21 f0 00 10 38 f0 00 14 
+00 00 00 04 00 00 00 03 
+00 00 00 02 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+
+.rela.my_handler
+Offset    Type              Symbol   Addend
+00000054   R_X86_64_32  isr_software     0
+00000058   R_X86_64_32  isr_terminal     0
+0000005c   R_X86_64_32  my_handler    24
+00000060   R_X86_64_32  isr_timer     0
+00000064   R_X86_64_32  my_handler    40
+00000068   R_X86_64_32  my_handler    38
+0000006c   R_X86_64_32  my_handler    30

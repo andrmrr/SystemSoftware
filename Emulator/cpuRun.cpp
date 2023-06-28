@@ -9,7 +9,6 @@ void CPU::run(){
   state = CPU::running;
 
   Word currInstruction;
-  char* instrBytes;
   unsigned char opcode, a, b, c;
   int16_t* signedDisp;
   uint16_t* disp = (uint16_t*)malloc(sizeof(uint16_t));
@@ -17,13 +16,17 @@ void CPU::run(){
   *pc += 4;
   currInstruction = readWord(*pc-4);
   while(state == CPU::running){
-    instrBytes = (char*)(&currInstruction);
-    opcode = instrBytes[0];
-    a = instrBytes[1] >> 4;
-    b = instrBytes[1] & 0x0F;
-    c = instrBytes[2] >> 4;
-    *disp = 0xF000 | (currInstruction & 0xFFF);
-    signedDisp = (int16_t*)disp;
+    opcode = currInstruction >> 24;
+    a = (currInstruction >> 20) & 0xF;
+    b = (currInstruction >> 16) & 0xF;
+    c = (currInstruction >> 12) & 0xF;
+    if(((currInstruction >> 11) & 1) == 0){ //pozitivan
+      *disp = (currInstruction & 0x0FFF);
+      signedDisp = (int16_t*)disp;
+    } else { //negativan
+      *disp = 0xF000 | (currInstruction & 0x0FFF);
+      signedDisp = (int16_t*)disp;
+    }
     Instruction instr(a, b, c, *signedDisp);
 
     switch(opcode){
@@ -103,7 +106,7 @@ void CPU::run(){
         execLdmem(instr);
         break;
       case 0x93: //POP
-        execPush(instr);
+        execPop(instr);
         break;
       case 0x94: //CSRWR
         execCsrwr(instr);

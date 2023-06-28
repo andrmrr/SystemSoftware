@@ -1,0 +1,10 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000    4   SCTN   LOC    2  isr
+3:   00000000    0  NOTYP  GLOB    2  isr_terminal
+
+.isr
+93 fe 00 04 
+

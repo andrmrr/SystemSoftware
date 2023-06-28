@@ -1,0 +1,1 @@
+./emulator test_files/program.hex

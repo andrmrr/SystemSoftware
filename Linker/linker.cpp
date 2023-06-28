@@ -41,7 +41,6 @@ void Linker::linkHex(){
   load();
   setSectionAdresses();
   solveRelocations();
-  // hexOutputTxt();
   hexOutput();
 }
 
@@ -137,30 +136,35 @@ void Linker::load(){
           continue;
         }
         s = symbolTable->addSection(name, st_secndx, ifname);
-        // s = symbolTable->addSection(name, ifname);
         curr_file_symbols.push_back(s);
         curr_file_symbols2.push_back(s);
       } else { // ako je globalni simbol koji nije sekcija
-        for(auto it = defined.begin(); it != defined.end(); it++){
-          if(it->compare(name) == 0) {
-            throw MultipleDefinitionsError(name);
+        if(st_secndx == -1 || st_secndx == 65535){ //ako je uvezeni simbol
+          s = symbolTable->findSymbol(name);
+          if(s == nullptr){ // nije vec definisan
+            s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
+            unresolved.push_back(name);
           }
-        }
-        s = symbolTable->findSymbol(name);
-        if(s == nullptr){ // samo za definisane fajlove
-          s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
-          if(st_bind == 1) s->setGlobal();
+          curr_file_symbols2.push_back(s);
+        } else { // normalan simbol (neuvezen)
+          for(auto it = defined.begin(); it != defined.end(); it++){
+            if(it->compare(name) == 0) {
+              throw MultipleDefinitionsError(name);
+            }
+          }
+          s = symbolTable->findSymbol(name);
+          if(s == nullptr){ // potpuno nov simbol
+            s = symbolTable->addSymbol(name, st_secndx, st_value, ifname);
+            if(st_bind == 1) s->setGlobal();
+          } else { // ako vec postoji nedefinisani simbol u tabeli simbola
+            s->setValue(st_value);
+            s->setSection(st_secndx);
+            s->setFile(ifname);
+            if(st_bind == 1) s->setGlobal();
+          }
           curr_file_symbols.push_back(s);
-        } else if(s->getSection() == 65535 || s->getSection() == -1){ // ako vec postoji nedefinisani simbol u tabeli simbola
-          s->setValue(st_value);
-          s->setSection(st_secndx);
-          s->setFile(ifname);
-          if(st_bind == 1) s->setGlobal();
-        }
-        curr_file_symbols2.push_back(s);
-        if(st_secndx == -1 || st_secndx == 65535){
-          unresolved.push_back(name);
-        } else {
+          curr_file_symbols2.push_back(s);
+          defined.push_back(name);
           for(auto it = unresolved.begin(); it != unresolved.end();){
             if(it->compare(name) == 0) {
               it = unresolved.erase(it);
@@ -317,10 +321,10 @@ void Linker::solveRelocations() {
           } else {
             val = sectionOffset + r->addend;
           }
-          sectionData[r->offset+0] = *((char*)&val+0); //little-endian
-          sectionData[r->offset+1] = *((char*)&val+1);
-          sectionData[r->offset+2] = *((char*)&val+2);
-          sectionData[r->offset+3] = *((char*)&val+3);
+          sectionData[r->offset+0] = *((char*)&val+3);
+          sectionData[r->offset+1] = *((char*)&val+2);
+          sectionData[r->offset+2] = *((char*)&val+1);
+          sectionData[r->offset+3] = *((char*)&val+0);
         } else { 
           // ne koristi se pc rel
         }

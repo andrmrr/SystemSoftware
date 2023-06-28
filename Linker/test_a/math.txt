@@ -1,0 +1,24 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000   60   SCTN   LOC    2  math
+3:   00000000    0  NOTYP  GLOB    2  mathAdd
+4:   00000018    0  NOTYP  GLOB    2  mathSub
+5:   00000030    0  NOTYP  GLOB    2  mathMul
+6:   00000048    0  NOTYP  GLOB    2  mathDiv
+
+.math
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 50 11 20 00 
+93 2e 00 04 93 fe 00 04 
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 51 11 20 00 
+93 2e 00 04 93 fe 00 04 
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 52 11 20 00 
+93 2e 00 04 93 fe 00 04 
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 53 11 20 00 
+93 2e 00 04 93 fe 00 04 
+

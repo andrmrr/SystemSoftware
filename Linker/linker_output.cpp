@@ -13,6 +13,7 @@ void Linker::hexOutput(){
   vector<char> data;
   vector<char> tmpData;
   for (auto it = sections.begin(); it != sections.end(); it++){
+    data.clear();
     sec = *it;
     for (int i = 0; i < sec->getData().size(); i++)
     {

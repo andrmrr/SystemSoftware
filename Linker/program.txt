@@ -1,0 +1,128 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+1:   00000000    0  NOTYP  GLOB    5  isr_timer
+2:   00000000    0  NOTYP  GLOB    5  isr_terminal
+3:   00000000    0  NOTYP  GLOB    5  isr_software
+4:   00000000    0   SCTN   LOC    1  my_handler
+5:   00000000    0  NOTYP  GLOB    1  handler
+6:   00000000    0   SCTN   LOC    2  math
+7:   00000000    0  NOTYP  GLOB    2  mathAdd
+8:   00000018    0  NOTYP  GLOB    2  mathSub
+9:   00000030    0  NOTYP  GLOB    2  mathMul
+a:   00000048    0  NOTYP  GLOB    2  mathDiv
+b:   00000000    0   SCTN   LOC    3  my_code
+c:   00000000    0  NOTYP  GLOB    3  my_start
+d:   00000000    0   SCTN   LOC    4  my_data
+e:   00000000    0  NOTYP  GLOB    4  value1
+f:   00000004    0  NOTYP  GLOB    4  value2
+10:   00000008    0  NOTYP  GLOB    4  value3
+11:   0000000c    0  NOTYP  GLOB    4  value4
+12:   00000010    0  NOTYP  GLOB    4  value5
+13:   00000014    0  NOTYP  GLOB    4  value6
+14:   00000018    0  NOTYP  GLOB    4  value7
+15:   00000000    0   SCTN   LOC    5  isr
+
+.my_handler
+81 e0 1f fc 81 e0 2f fc 
+90 12 00 00 92 2f 00 40 
+39 f1 00 58 92 2f 00 34 
+39 f1 00 4c 92 2f 00 28 
+39 f1 00 40 93 2e 00 04 
+93 1e 00 04 11 00 00 00 
+21 f0 00 2c 38 f0 00 24 
+21 f0 00 1c 38 f0 00 1c 
+21 f0 00 10 38 f0 00 14 
+00 00 00 04 00 00 00 03 
+00 00 00 02 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+.math
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 50 11 20 00 
+93 2e 00 04 93 fe 00 04 
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 51 11 20 00 
+93 2e 00 04 93 fe 00 04 
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 52 11 20 00 
+93 2e 00 04 93 fe 00 04 
+81 e0 2f fc 92 1e 00 08 
+92 2e 00 0c 53 11 20 00 
+93 2e 00 04 93 fe 00 04 
+.my_code
+92 ef 00 e0 92 1f 01 08 
+94 11 00 00 92 1f 00 d0 
+81 e0 1f fc 92 1f 00 c8 
+81 e0 1f fc 21 f0 00 bc 
+82 0f 00 e8 92 1f 00 b0 
+81 e0 1f fc 92 1f 00 b0 
+81 e0 1f fc 21 f0 00 d0 
+82 0f 00 c8 92 1f 00 94 
+81 e0 1f fc 92 1f 00 88 
+81 e0 1f fc 21 f0 00 b0 
+82 0f 00 a8 92 1f 00 74 
+81 e0 1f fc 92 1f 00 68 
+81 e0 1f fc 21 f0 00 90 
+82 0f 00 88 92 1f 00 54 
+81 e0 1f fc 92 1f 00 48 
+81 e0 1f fc 21 f0 00 78 
+82 0f 00 6c 92 1f 00 64 
+92 11 00 00 92 2f 00 7c 
+92 22 00 00 92 3f 00 6c 
+92 33 00 00 92 4f 00 5c 
+92 44 00 00 92 5f 00 4c 
+92 55 00 00 92 6f 00 40 
+92 66 00 00 92 7f 00 30 
+92 77 00 00 00 00 00 00 
+00 00 00 18 00 00 00 04 
+00 00 00 19 00 00 00 05 
+00 00 00 0b 00 00 00 07 
+00 00 00 02 f0 00 00 00 
+00 00 00 01 ff ff fe fe 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 
+.my_data
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 
+.isr
+93 fe 00 04 93 fe 00 04 
+81 e0 1f fc 81 e0 2f fc 
+92 1f 00 14 92 2f 00 14 
+80 02 10 00 93 2e 00 04 
+93 1e 00 04 93 fe 00 04 
+00 00 ab cd 00 00 00 00 
+
+.rela.my_handler
+Offset    Type              Symbol   Addend
+00000054   R_X86_64_32  isr_software     0
+00000058   R_X86_64_32  isr_terminal     0
+0000005c   R_X86_64_32  my_handler    24
+00000060   R_X86_64_32  isr_timer     0
+00000064   R_X86_64_32  my_handler    40
+00000068   R_X86_64_32  my_handler    38
+0000006c   R_X86_64_32  my_handler    30
+.rela.my_code
+Offset    Type              Symbol   Addend
+000000e8   R_X86_64_32    value7     0
+000000ec   R_X86_64_32    value1     0
+000000f0   R_X86_64_32    value6     0
+000000f4   R_X86_64_32    value5     0
+000000f8   R_X86_64_32   mathDiv     0
+000000fc   R_X86_64_32    value4     0
+00000100   R_X86_64_32   mathSub     0
+00000104   R_X86_64_32    value3     0
+00000108   R_X86_64_32   mathAdd     0
+0000010c   R_X86_64_32    value2     0
+00000110   R_X86_64_32   handler     0
+.rela.isr
+Offset    Type              Symbol   Addend
+0000002c   R_X86_64_32    value1     0

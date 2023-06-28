@@ -1,0 +1,18 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000    0  NOTYP  GLOB  UND  value1
+3:   00000000   20   SCTN   LOC    3  isr
+4:   00000000    0  NOTYP  GLOB    3  isr_software
+
+.isr
+81 e0 1f fc 81 e0 2f fc 
+92 1f 00 14 92 2f 00 14 
+80 02 10 00 93 2e 00 04 
+93 1e 00 04 93 fe 00 04 
+00 00 ab cd 00 00 00 00 
+
+.rela.isr
+Offset    Type              Symbol   Addend
+00000024   R_X86_64_32    value1     0

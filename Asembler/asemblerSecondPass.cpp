@@ -47,10 +47,10 @@ void Asembler::writePool(){
       data[offset+1] = b2;
     }
     lit = pool->getLiteral();
-    data.push_back(*((char*)(&lit)+0));
-    data.push_back(*((char*)(&lit)+1));
-    data.push_back(*((char*)(&lit)+2));
     data.push_back(*((char*)(&lit)+3));
+    data.push_back(*((char*)(&lit)+2));
+    data.push_back(*((char*)(&lit)+1));
+    data.push_back(*((char*)(&lit)+0));
   }
   //Simboli
   while(1){
@@ -62,7 +62,7 @@ void Asembler::writePool(){
       b2 = data[offset+1];
       //postavljamo 12-bitni pomeraj na kraj sekcije gde ce doci novi simbol
       disp = data.size() - offset - 2;
-      b1 = (disp >> 8) &0x0F;
+      b1 = b1 | (disp >> 8) &0x0F;
       b2 = disp & 0xFF;
       data[offset] = b1;
       data[offset+1] = b2;

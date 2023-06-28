@@ -53,10 +53,10 @@ void CPU::loadMemory(string ifName){
   }
 
   free(charr);
-  ofstream log("log.txt");
-  for(auto it = memory.begin(); it != memory.end(); it++){
-      log << setfill('0') << setw(8) << hex << it->first << " " << setw(8) << (int)it->second << endl;
-    }
+  // ofstream log("log.txt");
+  // for(auto it = memory.begin(); it != memory.end(); it++){
+  //     log << setfill('0') << setw(8) << hex << it->first << " " << setw(8) << (int)it->second << endl;
+  // }
 }
 
 vector<string> CPU::split(const string line, char delim) {
@@ -87,7 +87,7 @@ void CPU::print(){
     for(int j = 0; j < 4; j ++){
       int pos = i*4 + j;
       if(pos <= 9) cout << " ";
-      cout << "r" << pos << "=0x" << setfill('0') << setw(8) << gpr[pos] << "    ";
+      cout << "r" << dec << pos << "=0x" << setfill('0') << setw(8) << hex << gpr[pos] << "    ";
     }
     cout << endl;
   }

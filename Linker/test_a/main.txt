@@ -1,0 +1,75 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000    0  NOTYP  GLOB  UND  handler
+3:   00000000    0  NOTYP  GLOB  UND  mathAdd
+4:   00000000    0  NOTYP  GLOB  UND  mathSub
+5:   00000000    0  NOTYP  GLOB  UND  mathMul
+6:   00000000    0  NOTYP  GLOB  UND  mathDiv
+7:   00000000   c0   SCTN   LOC    7  my_code
+8:   00000000    0  NOTYP  GLOB    7  my_start
+9:   00000000   1c   SCTN   LOC    9  my_data
+a:   00000000    0  NOTYP  GLOB    9  value1
+b:   00000004    0  NOTYP  GLOB    9  value2
+c:   00000008    0  NOTYP  GLOB    9  value3
+d:   0000000c    0  NOTYP  GLOB    9  value4
+e:   00000010    0  NOTYP  GLOB    9  value5
+f:   00000014    0  NOTYP  GLOB    9  value6
+10:   00000018    0  NOTYP  GLOB    9  value7
+
+.my_code
+92 ef 00 e0 92 1f 01 08 
+94 11 00 00 92 1f 00 d0 
+81 e0 1f fc 92 1f 00 c8 
+81 e0 1f fc 21 f0 00 bc 
+82 0f 10 e8 92 1f 00 b0 
+81 e0 1f fc 92 1f 00 b0 
+81 e0 1f fc 21 f0 00 d0 
+82 0f 10 c8 92 1f 00 94 
+81 e0 1f fc 92 1f 00 88 
+81 e0 1f fc 21 f0 00 b0 
+82 0f 10 a8 92 1f 00 74 
+81 e0 1f fc 92 1f 00 68 
+81 e0 1f fc 21 f0 00 90 
+82 0f 10 88 92 1f 00 54 
+81 e0 1f fc 92 1f 00 48 
+81 e0 1f fc 21 f0 00 78 
+82 0f 10 6c 92 1f 00 64 
+92 11 00 00 92 2f 00 7c 
+92 22 00 00 92 3f 00 6c 
+92 33 00 00 92 4f 00 5c 
+92 44 00 00 92 5f 00 4c 
+92 55 00 00 92 6f 00 40 
+92 66 00 00 92 7f 00 30 
+92 77 00 00 00 00 00 00 
+00 00 00 18 00 00 00 04 
+00 00 00 19 00 00 00 05 
+00 00 00 0b 00 00 00 07 
+00 00 00 02 f0 00 00 00 
+00 00 00 01 ff ff fe fe 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 
+.my_data
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 
+00 00 00 00 
+
+.rela.my_code
+Offset    Type              Symbol   Addend
+000000e8   R_X86_64_32    value7     0
+000000ec   R_X86_64_32    value1     0
+000000f0   R_X86_64_32    value6     0
+000000f4   R_X86_64_32    value5     0
+000000f8   R_X86_64_32   mathDiv     0
+000000fc   R_X86_64_32    value4     0
+00000100   R_X86_64_32   mathSub     0
+00000104   R_X86_64_32    value3     0
+00000108   R_X86_64_32   mathAdd     0
+0000010c   R_X86_64_32    value2     0
+00000110   R_X86_64_32   handler     0

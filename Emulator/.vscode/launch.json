@@ -9,7 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/emulator",
-      "args": [],
+      "args": ["test_files/program.hex"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
