@@ -47,6 +47,12 @@ public:
   vector<string> split(const string line, char delim);
   uint32_t hexStringToUInt32(string hex, bool prefix);
 
+  //interrupt
+  void activateInterrupt(uint32_t num);
+  void maskCsrBits(Instruction instr);
+  void execIret(Instruction instr);
+  void execPopCsr(Instruction instr); 
+
   //instruction executions
   void execCall(Instruction instr);
   void execJmp(Instruction instr);

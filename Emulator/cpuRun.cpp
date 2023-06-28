@@ -34,10 +34,10 @@ void CPU::run(){
         state = CPU::finished;
         break;
       case 0x10: //INT
-        //TODO
+        activateInterrupt(4);
         break;
       case 0x11: //IRET
-        //TODO
+        execIret(instr);
         break;
       case 0x21: //CALL
         execCall(instr);
@@ -111,7 +111,9 @@ void CPU::run(){
       case 0x94: //CSRWR
         execCsrwr(instr);
         break;
-
+      default: //ERROR
+        activateInterrupt(1);
+        break;
     }
 
     *pc += 4;
@@ -153,6 +155,11 @@ void CPU::execPush(Instruction instr){
 
 void CPU::execPop(Instruction instr){
   gpr[instr.a] = readWord(gpr[instr.b]);
+  gpr[instr.b] = gpr[instr.b] + instr.d;
+}
+
+void CPU::execPopCsr(Instruction instr){ //0x97
+  csr[instr.a] = readWord(gpr[instr.b]);
   gpr[instr.b] = gpr[instr.b] + instr.d;
 }
 
@@ -225,4 +232,40 @@ void CPU::execCsrrd(Instruction instr){
 
 void CPU::execCsrwr(Instruction instr){
   csr[instr.a] = gpr[instr.b];
+}
+
+void CPU::execIret(Instruction instr){
+  Instruction ins(PC, SP, 0, 4);
+  execPop(ins);
+  ins = Instruction(STATUS, SP, 0, 4);
+  execPopCsr(ins);
+}
+
+void CPU::activateInterrupt(uint32_t num){
+  //push status
+  Instruction ins(SP, 0, 1, -8); // mem[sp-8] <= r1
+  execStmem(ins);
+  ins = Instruction(1, STATUS, 0, 0); // r1 <= status
+  execCsrrd(ins);
+  ins = Instruction(SP, 0, 1, -4); // sp <= sp - 4; mem[sp] <= r1
+  execPush(ins);
+  ins = Instruction(1, 0, 0, num); // r1 <= num
+  execRegReg(ins);
+  ins = Instruction(CAUSE, 1, 0, 0); // cause <= r1
+  execCsrwr(ins);
+  ins = Instruction(1, SP, 0, -4); // r1 <= mem[sp-4]
+  execLdmem(ins);
+
+  ins = Instruction(SP, 0, PC, -4);
+  execPush(ins);
+
+  ins = Instruction(STATUS, STATUS, 0, 0x1 << 2);
+  maskCsrBits(ins);
+
+  ins = Instruction(PC, HANDLER, 0, 0);
+  execCsrrd(ins);  
+}
+
+void CPU::maskCsrBits(Instruction instr){ //0x95
+  csr[instr.a] = csr[instr.b] | instr.d;
 }

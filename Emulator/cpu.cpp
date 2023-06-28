@@ -9,8 +9,7 @@ CPU::~CPU(){
 }
 
 void CPU::reset(){
-  gpr[15] = 0x40000000;
-  gpr[14] = 0xF0000000;
+  gpr[PC] = 0x40000000;
   memory = map<uint32_t, Word>();
   state = CPU::finished;
 }
