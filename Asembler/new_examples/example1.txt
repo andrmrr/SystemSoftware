@@ -1,0 +1,42 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000   18   SCTN   LOC    2  sekcija
+6:   00000018    0  NOTYP  GLOB    2  zezanje
+7:   00000000   28   SCTN   LOC    7  arith
+8:   00000000   1c   SCTN   LOC    8  stores
+9:   00000000    8   SCTN   LOC    9  neka
+
+.sekcija
+00 00 00 00 21 f0 00 18 
+10 00 00 00 39 fe 00 0c 
+00 00 00 00 38 f0 00 00 
+00 00 00 00 34 12 00 00 
+00 01 00 00 
+.arith
+92 0f 00 28 92 00 00 00 
+92 0f 00 20 92 00 00 0a 
+92 0f 00 14 92 0f 00 10 
+92 00 00 00 92 1f 00 00 
+92 00 00 0e 91 21 00 00 
+00 ff 00 00 00 00 00 00 
+.stores
+82 0f 70 18 82 0f 00 18 
+80 0f 10 00 80 09 70 0e 
+90 b0 00 00 94 13 00 00 
+90 f2 00 00 00 ff 00 00 
+00 00 00 00 
+.neka
+38 f0 00 04 21 f0 00 04 
+c8 00 00 00 00 00 00 00 
+
+.rela.arith
+Offset    Type              Symbol   Addend
+0000002c   R_X86_64_32   zezanje     0
+.rela.stores
+Offset    Type              Symbol   Addend
+00000020   R_X86_64_32   zezanje     0
+.rela.neka
+Offset    Type              Symbol   Addend
+0000000c   R_X86_64_32   sekcija     c

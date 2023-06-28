@@ -5,9 +5,12 @@
 #include <fstream>
 #include <exception>
 #include "tokens.h"
+#include "pool.h"
 #include "symbolTable.h"
 #include "relocationTable.h"
 #include "sectionTable.h"
+
+#define INSTRUCTION_SIZE 4
 
 class Asembler {
 
@@ -18,6 +21,7 @@ class Asembler {
   int line;
 
   Symbol* currSection;
+  Pool* pool;
   SymbolTable* symbolTable;
   vector<RelocationTable*> relTables;
   SectionTable* secTable;
@@ -75,33 +79,63 @@ public:
   //writing methods
   void write(char* chars, int size);
   void fill(char filler, int size);
+  void writePool();
 
   //directive and instruction processing PASS 2
   int addRelocationPCREL(Symbol* s, int offset);
   int addRelocationABS(Symbol* s, int offset);
 
-  bool handleBranchOperand(int* tokenCnt, char* charr, int addrStart);
-  void handleCondition(int* tokenCnt, char* charr);
-  void handle1gpr(int* tokenCnt, char* charr);
-  void handle2gpr(int* tokenCnt, char* charr);
+  bool handleOperand(int* tokenCnt, int offsFromLC);
+  void handle1gpr(int* tokenCnt, char* gpr);
+  void handle2gpr(int* tokenCnt, char* gpr1, char* gpr2);
+  void handle1indir1gpr(int* tokenCnt, char* gpr1, char* gpr2);
+  bool handle1indirAddend1gpr(int* tokenCnt, char* gpr1, char* gpr2, uint16_t* disp);
+  bool handle12bitOperand(int* tokenCnt, uint16_t* disp);
+  void handle1gpr1indir(int* tokenCnt, char* gpr1, char* gpr2);
+  bool handle1gpr1indirAddend(int* tokenCnt, char* gpr1, char* gpr2, uint16_t* disp);
 
-  bool handleDataOperand(int* tokenCnt, char* charr);
-  bool handle1doperand1gpr(int* tokenCnt, char* charr);
-  void handle1indir1gpr(int* tokenCnt, char* charr);
-  bool handle1indirAddend1gpr(int* tokenCnt, char* charr);
-  bool handle1lit1gpr(int* tokenCnt, char* charr);
-  bool handle12bitOperand(int* tokenCnt, char* charr);
-  bool handle1gpr1doperand(int* tokenCnt, char* charr);
-  void handle1gpr1indir(int* tokenCnt, char* charr);
-  bool handle1gpr1indirAddend(int* tokenCnt, char* charr);
-  void handle1gpr1csr(int* tokenCnt, char* charr);
-  void handle1csr1gpr(int* tokenCnt, char* charr);
+  void handle1gpr1csr(int* tokenCnt, char* gpr, char* csr);
+  void handle1csr1gpr(int* tokenCnt, char* csr, char* gpr);
 
   bool handleGlobal(int* tokenCnt);
   bool handleWord(int* tokenCnt, char* charr);
   void handleSkip(int* tokenCnt);
   void handleAscii(int* tokenCnt);
   void skipToNewLine(int* tokenCnt);
+
+  //handling instructions
+  void writeInstruction(char* charr, char opcode, char a, char b, char c, uint16_t d);
+  // void handleEmpty(char* charr); // HALT, INT, IRET
+  void handlePush(int* tokenCnt, char* charr);
+  void handlePop(int* tokenCnt, char* charr);
+  void handleRet(int* tokenCnt, char* charr);
+  bool handleCall(int* tokenCnt, char* charr);
+  bool handleJmp(int* tokenCnt, char* charr);
+  bool handleBeq(int* tokenCnt, char* charr);
+  bool handleBne(int* tokenCnt, char* charr);
+  bool handleBgt(int* tokenCnt, char* charr);
+  void handleXchg(int* tokenCnt, char* charr);
+  void handleAdd(int* tokenCnt, char* charr);
+  void handleSub(int* tokenCnt, char* charr);
+  void handleMul(int* tokenCnt, char* charr);
+  void handleDiv(int* tokenCnt, char* charr);
+  void handleNot(int* tokenCnt, char* charr);
+  void handleAnd(int* tokenCnt, char* charr);
+  void handleOr(int* tokenCnt, char* charr);
+  void handleXor(int* tokenCnt, char* charr);
+  void handleShl(int* tokenCnt, char* charr);
+  void handleShr(int* tokenCnt, char* charr);
+  bool handleLdmemdir(int* tokenCnt, char* charr);
+  void handleLdregdir(int* tokenCnt, char* charr);
+  void handleLdregind(int* tokenCnt, char* charr);
+  bool handleLdregindadd(int* tokenCnt, char* charr);
+  bool handleLdimmed(int* tokenCnt, char* charr);
+  bool handleStmemdir(int* tokenCnt, char* charr);
+  void handleStregdir(int* tokenCnt, char* charr);
+  void handleStregind(int* tokenCnt, char* charr);
+  bool handleStregindadd(int* tokenCnt, char* charr);
+  void handleCsrrd(int* tokenCnt, char* charr);
+  void handleCsrwr(int* tokenCnt, char* charr);
 
   //output methods
   void createTextFile();

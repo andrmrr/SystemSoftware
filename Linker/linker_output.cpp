@@ -5,45 +5,7 @@
 using namespace std;
 
 void Linker::hexOutput(){
-  string binOutputPath = output_file_name;
-  ofstream binOutputFile(binOutputPath, ios::out | ios::binary);
-  vector<Section *> sections = secTable->getAllSections();
-  int cnt, addr;
-  uint32_t temp;
-  uint8_t charr;
-  Section *sec;
-  vector<char> data;
-  vector<char> tmpData;
-  for (auto it = sections.begin(); it != sections.end(); it++){
-    sec = *it;
-    for (int i = 0; i < sec->getData().size(); i++)
-    {
-      tmpData = sec->getDataPart(i);
-      data.insert(data.end(), tmpData.begin(), tmpData.end());
-    }
-    cnt = 0;
-    addr = sec->getAddress();   
-    for (auto it = data.begin(); it != data.end(); it++){
-      if (cnt % 8 == 0){
-        temp = addr + cnt;
-        binOutputFile.write((char*)(&temp), sizeof(temp));
-      }
-
-      charr = *it;
-      binOutputFile.write((char*)(&charr), sizeof(charr));
-      cnt++;
-
-    }
-    // if (cnt % 8 != 0) txtOutputFile << endl;
-    
-  }
-  // txtOutputFile << endl;
-}
-
-void Linker::hexOutputTxt(){
-  // string binOutputPath = output_file_name;
-  // ofstream binOutputFile(binOutputPath, ios::out | ios::binary);
-  string txtOutputPath = output_file_name.substr(0, output_file_name.size() - 4) + ".txt";
+  string txtOutputPath = output_file_name;//.substr(0, output_file_name.size() - 4) + ".txt";
   ofstream txtOutputFile(txtOutputPath);
   vector<Section *> sections = secTable->getAllSections();
   int cnt, addr;

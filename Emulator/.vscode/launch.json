@@ -5,11 +5,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug asembler",
+      "name": "Debug emulator",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/asembler",
-      "args": ["new_examples/example1.s"],
+      "program": "${workspaceFolder}/emulator",
+      "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
@@ -27,7 +27,7 @@
               "ignoreFailures": true
           }
       ],
-      "preLaunchTask": "g++ asembler",
+      "preLaunchTask": "g++ emulator",
       "miDebuggerPath": "/usr/bin/gdb"
     }
 

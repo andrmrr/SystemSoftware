@@ -4,6 +4,8 @@
 void Asembler::secondPassInit(){
   SectionTable::initSectionTable();
   secTable = SectionTable::getInstance();
+  Pool::initPool();
+  pool = Pool::getInstance();
   vector<Symbol*> secSymbols = symbolTable->getSections();
   for(auto it = secSymbols.begin(); it != secSymbols.end(); it++){
     secTable->addSection(*it);
@@ -21,6 +23,61 @@ void Asembler::fill(char filler, int size){
   incCounter(size);
 }
 
+void Asembler::writePool(){
+  if(pool == nullptr) return;
+  vector<char> data = secTable->findSection(currSection)->getData();
+  uint32_t lit;
+  string sym;
+  uint16_t disp;
+  char b1, b2;
+  vector<uint32_t> offsets;
+  //Literali
+  while(1){
+    offsets = pool->getLiteralOffsets();
+    if(offsets.empty()) break;
+    for(auto it = offsets.begin(); it != offsets.end(); it++){
+      uint32_t offset = *it;
+      b1 = data[offset];
+      b2 = data[offset+1];
+      //postavljamo 12-bitni pomeraj na kraj sekcije gde ce doci novi literal
+      disp = data.size() - offset - 2;
+      b1 = b1 | ((disp >> 8) & 0x0F);
+      b2 = disp & 0xFF;
+      data[offset] = b1;
+      data[offset+1] = b2;
+    }
+    lit = pool->getLiteral();
+    data.push_back(*((char*)(&lit)+0));
+    data.push_back(*((char*)(&lit)+1));
+    data.push_back(*((char*)(&lit)+2));
+    data.push_back(*((char*)(&lit)+3));
+  }
+  //Simboli
+  while(1){
+    offsets = pool->getSymbolOffsets();
+    if(offsets.empty()) break;
+    for(auto it = offsets.begin(); it != offsets.end(); it++){
+      uint32_t offset = *it;
+      b1 = data[offset];
+      b2 = data[offset+1];
+      //postavljamo 12-bitni pomeraj na kraj sekcije gde ce doci novi simbol
+      disp = data.size() - offset - 2;
+      b1 = (disp >> 8) &0x0F;
+      b2 = disp & 0xFF;
+      data[offset] = b1;
+      data[offset+1] = b2;
+    }
+    sym = pool->getSymbol();
+    addRelocationABS(symbolTable->findSymbol(sym), data.size());
+    data.push_back(0);
+    data.push_back(0);
+    data.push_back(0);
+    data.push_back(0);
+  }
+
+  secTable->findSection(currSection)->setData(data);
+}
+
 void Asembler::secondPass(){
   bool printInst = false;
   secondPassInit();
@@ -30,176 +87,148 @@ void Asembler::secondPass(){
   uint32_t temp32;
   string strTemp;
   char* cTemp = (char*) calloc(10, sizeof(char));
+  char* instr = (char*) malloc(4*sizeof(char));
+  char opcode;
 
   while(tokenCnt < tokens.size()){
     token = tokens[tokenCnt++];
 
     // if(printInst) cout << "Token " << token.getType() << endl;
-    *cTemp = Token::getOPCodeBinary(token.getType());
     switch(token.getType()) {
       case TokenType::HALT:
         if(printInst) cout << "halt" << endl;
-        write(cTemp, 1);
+        opcode = Token::getOPCodeBinary(token.getType());
+        writeInstruction(instr, opcode, 0, 0, 0, 0);
         break;
       case TokenType::INT:
         if(printInst) cout << "int" << endl;
-        write(cTemp, 1);
+        opcode = Token::getOPCodeBinary(token.getType());
+        writeInstruction(instr, opcode, 0, 0, 0, 0);
         break;
       case TokenType::IRET:
         if(printInst) cout << "iret" << endl;
-        write(cTemp, 1);
+        opcode = Token::getOPCodeBinary(token.getType());
+        writeInstruction(instr, opcode, 0, 0, 0, 0);
         break;
       case TokenType::CALL: 
         if(printInst) cout << "call" << endl;
-        syntaxError = handleBranchOperand(&tokenCnt, cTemp, 1) ? false : true;
-        write(cTemp, 5);
+        syntaxError = handleCall(&tokenCnt, instr);
         break;
       case TokenType::RET:
         if(printInst) cout << "ret " << endl;
-        write(cTemp, 1);
+        handleRet(&tokenCnt, instr);
         break;
       case TokenType::JMP: 
         if(printInst) cout << "jmp" << endl;
-        syntaxError = handleBranchOperand(&tokenCnt, cTemp, 1) ? false : true;
-        write(cTemp, 5);
+        syntaxError = handleJmp(&tokenCnt, instr);
         break;
       case TokenType::BEQ:
         if(printInst) cout << "beq" << endl;
-        handleCondition(&tokenCnt, cTemp);
-        syntaxError = handleBranchOperand(&tokenCnt, cTemp, 2) ? false : true;
-        write(cTemp, 6);
+        syntaxError = handleBeq(&tokenCnt, instr);
         break;
       case TokenType::BNE:
         if(printInst) cout << "bne" << endl;
-        handleCondition(&tokenCnt, cTemp);
-        syntaxError = handleBranchOperand(&tokenCnt, cTemp, 2) ? false : true;
-        write(cTemp, 6);
+        syntaxError = handleBne(&tokenCnt, instr);
         break;
       case TokenType::BGT:
         if(printInst) cout << "bgt" << endl;
-        handleCondition(&tokenCnt, cTemp);
-        syntaxError = handleBranchOperand(&tokenCnt, cTemp, 2) ? false : true;
-        write(cTemp, 6);
+        syntaxError = handleBgt(&tokenCnt, instr);
         break;
       case TokenType::PUSH:
         if(printInst) cout << "push" << endl;
-        handle1gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handlePush(&tokenCnt, instr);
         break;
       case TokenType::POP:
         if(printInst) cout << "pop" << endl;
-        handle1gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handlePop(&tokenCnt, instr);
         break;
       case TokenType::XCHG:
         if(printInst) cout << "xchg" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleXchg(&tokenCnt, instr);
         break;
       case TokenType::ADD:
         if(printInst) cout << "add" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleAdd(&tokenCnt, instr);
         break;
       case TokenType::SUB:
         if(printInst) cout << "sub" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleSub(&tokenCnt, instr);
         break;
       case TokenType::MUL: 
         if(printInst) cout << "mul" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleMul(&tokenCnt, instr);
         break;
       case TokenType::DIV: 
         if(printInst) cout << "div" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleDiv(&tokenCnt, instr);
         break;
       case TokenType::NOT: 
         if(printInst) cout << "not" << endl;
-        handle1gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleNot(&tokenCnt, instr);
         break;
       case TokenType::AND: 
         if(printInst) cout << "and" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleAnd(&tokenCnt, instr);
         break;
       case TokenType::OR: 
         if(printInst) cout << "or" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleOr(&tokenCnt, instr);
         break;
       case TokenType::XOR: 
         if(printInst) cout << "xor" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleXor(&tokenCnt, instr);
         break;
       case TokenType::SHL: 
         if(printInst) cout << "shl" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleShl(&tokenCnt, instr);
         break;
       case TokenType::SHR: 
         if(printInst) cout << "shr" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleShr(&tokenCnt, instr);
         break;
       case TokenType::LDMEMDIR:
         if(printInst) cout << "ldmemdir" << endl;
-        syntaxError = handle1doperand1gpr(&tokenCnt, cTemp) ? false : true;
-        write(cTemp, 6);
+        syntaxError = handleLdmemdir(&tokenCnt, instr);
         break;
       case TokenType::LDREGDIR:
         if(printInst) cout << "ldregdir" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleLdregdir(&tokenCnt, instr);
         break;
       case TokenType::LDREGIND:
         if(printInst) cout << "ldregind" << endl;
-        handle1indir1gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleLdregind(&tokenCnt, instr);
         break;
       case TokenType::LDREGINDADD:
         if(printInst) cout << "ldregindadd" << endl;
-        syntaxError = handle1indirAddend1gpr(&tokenCnt, cTemp) ? false : true;
-        write(cTemp, 4);
+        syntaxError = handleLdregindadd(&tokenCnt, instr);
         break;
       case TokenType::LDIMMED:
         if(printInst) cout << "ldimmed" << endl;
-        syntaxError = handle1lit1gpr(&tokenCnt, cTemp) ? false : true;
-        write(cTemp, 6);
+        syntaxError = handleLdimmed(&tokenCnt, instr);
         break;
       case TokenType::STMEMDIR: 
         if(printInst) cout << "stmemdir" << endl;
-        syntaxError = handle1gpr1doperand(&tokenCnt, cTemp) ? false : true;
-        write(cTemp, 6);
+        syntaxError = handleStmemdir(&tokenCnt, instr);
         break;
       case TokenType::STREGDIR:
         if(printInst) cout << "stregdir" << endl;
-        handle2gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleStregdir(&tokenCnt, instr);
         break;
       case TokenType::STREGIND:
         if(printInst) cout << "stregind" << endl;
-        handle1gpr1indir(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleStregind(&tokenCnt, instr);
         break;
       case TokenType::STREGINDADD:
         if(printInst) cout << "stregindadd" << endl;
-        syntaxError = handle1gpr1indirAddend(&tokenCnt, cTemp) ? false : true;
-        write(cTemp, 4);
+        syntaxError = handleStregindadd(&tokenCnt, instr);
         break;
       case TokenType::CSRRD:  
         if(printInst) cout << "csrrd" << endl;
-        handle1csr1gpr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleCsrrd(&tokenCnt, instr);
         break;
       case TokenType::CSRWR: 
         if(printInst) cout << "csrwr" << endl;
-        handle1gpr1csr(&tokenCnt, cTemp);
-        write(cTemp, 2);
+        handleCsrwr(&tokenCnt, instr);
         break;
       case TokenType::GLOBAL: 
         if(printInst) cout << "global" << endl;
@@ -207,6 +236,11 @@ void Asembler::secondPass(){
         break;
       case TokenType::SECTION:
         if(printInst) cout << "section" << endl;
+        if (getCounter() > 0) {
+          writePool();
+          Pool::initPool();
+          pool = Pool::getInstance();
+        }
         resetCounter();
         nextToken = tokens[tokenCnt++];
         currSection = symbolTable->findSymbol(nextToken.getText());
@@ -229,17 +263,19 @@ void Asembler::secondPass(){
         break;
       case TokenType::END:
         if(printInst) cout << "end" << endl;
+        writePool();
         return;
       default: break;
     }
 
     if(syntaxError){
       //uradi nesto
-      //if(printInst) cout << "GRESKA PRI PARSIRANJU PRI DRUGOM PROLAZU" << endl;
+      if(printInst) cout << "GRESKA PRI PARSIRANJU PRI DRUGOM PROLAZU" << endl;
       error = true;
       break;
     }
   }
+  if(!error) writePool();
   free(cTemp);
   if(printInst) cout << "Opet cisto reda radi" << endl;
 }
@@ -331,7 +367,7 @@ int Asembler::addRelocationPCREL(Symbol* s, int offset){
 }
 
 int Asembler::addRelocationABS(Symbol* s, int offset){
-  int offs = lcounter + offset;
+  // int offs = lcounter + offset;
   int addend = 0;
   Symbol* relSym = s;
   if(!(s->isGlobal())){
@@ -341,65 +377,56 @@ int Asembler::addRelocationABS(Symbol* s, int offset){
 
   for(auto it = relTables.begin(); it != relTables.end(); it++){
     if((*it)->getSection()->getSection() == currSection->getSection()){
-      (*it)->addAbsolute(offs, relSym->getName(), addend);
+      (*it)->addAbsolute(offset, relSym->getName(), addend);
       return 0;
     }
   }
   return -1;
 }
 
-bool Asembler::handleBranchOperand(int* tokenCnt, char* charr, int addrStart){
+bool Asembler::handleOperand(int* tokenCnt, int offsFromLC){
+  uint32_t offset = getCounter() + offsFromLC; // da bismo dosli do displacement dela instrukcije
   uint32_t operand = 0;
   Token nextToken = tokens[(*tokenCnt)++];
-  if(nextToken.getType() == TokenType::HEX){
+  if(nextToken.getType() == TokenType::HEX || nextToken.getType() == TokenType::LIT_HEX){
     operand = hexStringToInt(nextToken.getText(), true);
-  } else if(nextToken.getType() == TokenType::DEC){
+    pool->addLiteral(operand, offset);
+    return false;
+  } else if(nextToken.getType() == TokenType::DEC || nextToken.getType() == TokenType::LIT_DEC){
     operand = atoi(nextToken.getText().c_str());
+    pool->addLiteral(operand, offset);
+    return false;
   } else { //simbol
     Symbol* s = symbolTable->findSymbol(nextToken.getText());
     if(s == nullptr){
-      cout << "Unidentified symbol!" << endl;
-      return false;
+      cout << "Unidentified symbol operand!" << endl;
+      return true;
     }
     if(s->isAbsolute()){
       operand = s->getValue();
+      pool->addLiteral(operand, offset);
     } else {
-      operand = addRelocationABS(s, addrStart);
+      pool->addSymbol(s->getName(), offset);
     }
+    return false;
   }
-  charr[addrStart++] = *((char*)&operand+0); //little-endian
-  charr[addrStart++] = *((char*)&operand+1);
-  charr[addrStart++] = *((char*)&operand+2);
-  charr[addrStart++] = *((char*)&operand+3);
-  return true;
 }
 
-void Asembler::handleCondition(int* tokenCnt, char* charr) {
-  //gpr1, gpr2,
-  handle2gpr(tokenCnt, charr);
-  (*tokenCnt)++; // pojedi zapetu
-}
 
-void Asembler::handle1gpr(int* tokenCnt, char* charr){
-  //gpr
-  string gpr;
+void Asembler::handle1gpr(int* tokenCnt, char* gpr){
+  string s;
   char ind;
-  gpr = tokens[(*tokenCnt)++].getText();
-  ind = gprIndex(gpr);
-  *(charr+1) = (0x0f & ind);
+  s = tokens[(*tokenCnt)++].getText();
+  *gpr = gprIndex(s);
 }
 
-void Asembler::handle2gpr(int* tokenCnt, char* charr){
-  //gprS, gprD
-  string gprS, gprD;
-  char indS, indD, regs;
-  gprS = tokens[(*tokenCnt)++].getText();
+void Asembler::handle2gpr(int* tokenCnt, char* gpr1, char* gpr2){
+  string s1, s2;
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi zapetu
-  gprD = tokens[(*tokenCnt)++].getText();
-  indS = gprIndex(gprS);
-  indD = gprIndex(gprD);
-  regs = ((indD << 4) | (0x0f & indS));
-  *(charr+1) = regs;
+  s2 = tokens[(*tokenCnt)++].getText();
+  *gpr1 = gprIndex(s1);
+  *gpr2 = gprIndex(s2);
 }
 
 char Asembler::gprIndex(string gpr){
@@ -413,48 +440,34 @@ char Asembler::gprIndex(string gpr){
   return -1;
 }
 
-bool Asembler::handle1doperand1gpr(int* tokenCnt, char* charr){
-  //sym, gpr
-  bool status = handleDataOperand(tokenCnt, charr);
-  (*tokenCnt)++; // pojedi zapetu
-  handle1gpr(tokenCnt, charr);
-  return status;
-}
-
-void Asembler::handle1indir1gpr(int* tokenCnt, char* charr){
-  // [%gprS], gprD
-  string gprS, gprD;
-  char indS, indD, regs;
+void Asembler::handle1indir1gpr(int* tokenCnt, char* gpr1, char* gpr2){
+  string s1, s2;
   (*tokenCnt)++; // pojedi [
-  gprS = tokens[(*tokenCnt)++].getText();
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi ]
   (*tokenCnt)++; // pojedi zapetu
-  gprD = tokens[(*tokenCnt)++].getText();
-  indS = gprIndex(gprS);
-  indD = gprIndex(gprD);
-  regs = ((indD << 4) | (0x0f & indS));
-  *(charr+1) = regs;
+  s2 = tokens[(*tokenCnt)++].getText();
+  *gpr1 = gprIndex(s1);
+  *gpr2 = gprIndex(s2);
 }
-bool Asembler::handle1indirAddend1gpr(int* tokenCnt, char* charr){
+
+
+bool Asembler::handle1indirAddend1gpr(int* tokenCnt, char* gpr1, char* gpr2, uint16_t* disp){
   //[%gprS + sym], %gprD
-  bool status;
-  string gprS, gprD;
-  char indS, indD, regs;
+  string s1, s2;
   (*tokenCnt)++; // pojedi [
-  gprS = tokens[(*tokenCnt)++].getText();
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi +
-  status = handle12bitOperand(tokenCnt, charr);
+  bool status = handle12bitOperand(tokenCnt, disp);
   (*tokenCnt)++; // pojedi ]
   (*tokenCnt)++; // pojedi zapetu
-  gprD = tokens[(*tokenCnt)++].getText();
-  indS = gprIndex(gprS);
-  indD = gprIndex(gprD);
-  regs = ((indD << 4) | (0x0f & indS));
-  *(charr+1) = regs;
+  s2 = tokens[(*tokenCnt)++].getText();
+  *gpr1 = gprIndex(s1);
+  *gpr2 = gprIndex(s2);
   return status;
 }
 
-bool Asembler::handle12bitOperand(int* tokenCnt, char* charr){
+bool Asembler::handle12bitOperand(int* tokenCnt, uint16_t* disp){
   int operand = 0;
   Token nextToken = tokens[(*tokenCnt)++];
   if(nextToken.getType() == TokenType::HEX){
@@ -464,101 +477,46 @@ bool Asembler::handle12bitOperand(int* tokenCnt, char* charr){
   } else { //simbol
     Symbol* s = symbolTable->findSymbol(nextToken.getText());
     if(s == nullptr || s->getSection() != 1){
-      cout << "Unidentified symbol!" << endl;
-      return false;
+      cout << "Unidentified symbol displacement!" << endl;
+      return true;
     }
     operand = s->getValue();
   }
 
-  if(operand > (1<<12)) {
+  if(operand >= (1<<12)) {
     cout << "Operand is larger than 12 bits!" << endl;
-    return false;
+    return true;
   } else {
-    charr[2] = *((char*)&operand+0); //little-endian
-    charr[3] = *((char*)&operand+1);
+    *disp = operand & 0xFFFF;
   }
-  return true;
+  return false;
 }
 
-bool Asembler::handle1lit1gpr(int* tokenCnt, char* charr){
-  //$sym, %gprD
-  bool status;
-  string symbolOnly = tokens[*tokenCnt].getText();
-  symbolOnly = symbolOnly.substr(1);
-  tokens[*tokenCnt].setText(symbolOnly);
-  status = handleDataOperand(tokenCnt, charr);
-  (*tokenCnt)++; // pojedi zapetu
-  handle1gpr(tokenCnt, charr);
-  return status;
-}
-
-bool Asembler::handleDataOperand(int* tokenCnt, char* charr){
-  int addrStart = 2;
-  uint32_t operand = 0;
-  Token nextToken = tokens[(*tokenCnt)++];
-  if(nextToken.getType() == TokenType::HEX){
-    operand = hexStringToInt(nextToken.getText(), true);
-  } else if(nextToken.getType() == TokenType::DEC){
-    operand = atoi(nextToken.getText().c_str());
-  } else { //simbol
-    Symbol* s = symbolTable->findSymbol(nextToken.getText());
-    if(s == nullptr){
-      cout << "Unidentified symbol!" << endl;
-      return false;
-    }
-    if(s->isAbsolute()) {
-      operand = s->getValue();
-    } else {
-      operand = addRelocationABS(s, addrStart);
-    }
-  }
-  charr[addrStart++] = *((char*)&operand+0); //little-endian
-  charr[addrStart++] = *((char*)&operand+1);
-  charr[addrStart++] = *((char*)&operand+2);
-  charr[addrStart++] = *((char*)&operand+3);
-  return true;
-}
-
-bool Asembler::handle1gpr1doperand(int*tokenCnt, char* charr){
-  //gpr, sym
-  handle1gpr(tokenCnt, charr);
-  (*tokenCnt)++; // pojedi zapetu
-  bool status = handleDataOperand(tokenCnt, charr);
-  return status;
-}
-
-void Asembler::handle1gpr1indir(int*tokenCnt, char* charr){
-   // gprS, [%gprD]
-  string gprS, gprD;
-  char indS, indD, regs;
-  gprS = tokens[(*tokenCnt)++].getText();
+void Asembler::handle1gpr1indir(int* tokenCnt, char* gpr1, char* gpr2){
+  string s1, s2;
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi zapetu
   (*tokenCnt)++; // pojedi [
-  gprD = tokens[(*tokenCnt)++].getText();
+  s2 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi ]
-  indS = gprIndex(gprS);
-  indD = gprIndex(gprD);
-  regs = ((indD << 4) | (0x0f & indS));
-  *(charr+1) = regs;
+  *gpr1 = gprIndex(s1);
+  *gpr2 = gprIndex(s2);
 }
 
-bool Asembler::handle1gpr1indirAddend(int*tokenCnt, char* charr){
+bool Asembler::handle1gpr1indirAddend(int* tokenCnt, char* gpr1, char* gpr2, uint16_t* disp){
   // %gprS, [%gprD + sym]
-  bool status;
-  string gprS, gprD;
-  char indS, indD, regs;
-  gprS = tokens[(*tokenCnt)++].getText();
+  string s1, s2;
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi zapetu
   (*tokenCnt)++; // pojedi [
-  gprD = tokens[(*tokenCnt)++].getText();
+  s2 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi +
-  status = handle12bitOperand(tokenCnt, charr);
+  bool status = handle12bitOperand(tokenCnt, disp);
   (*tokenCnt)++; // pojedi ]
-  indS = gprIndex(gprS);
-  indD = gprIndex(gprD);
-  regs = ((indD << 4) | (0x0f & indS));
-  *(charr+1) = regs;
+  *gpr1 = gprIndex(s1);
+  *gpr2 = gprIndex(s2);
   return status;
+
 }
 
 char Asembler::csrIndex(string csr){
@@ -572,29 +530,22 @@ char Asembler::csrIndex(string csr){
   return -1;
 }
 
-void Asembler::handle1gpr1csr(int* tokenCnt, char* charr){
-  // gpr, csr
-  string gpr, csr;
-  char indGpr, indCsr, regs;
-  gpr = tokens[(*tokenCnt)++].getText();
+void Asembler::handle1gpr1csr(int* tokenCnt, char* gpr, char* csr){
+  string s1, s2;
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi zapetu
-  csr = tokens[(*tokenCnt)++].getText();
-  indGpr = gprIndex(gpr);
-  indCsr = csrIndex(csr);
-  regs = ((indCsr << 4) | (0x0f & indGpr));
-  *(charr+1) = regs;
+  s2 = tokens[(*tokenCnt)++].getText();
+  *gpr = gprIndex(s1);
+  *csr = csrIndex(s2);
 }
-void Asembler::handle1csr1gpr(int* tokenCnt, char* charr){
-  // csr, gpr
-  string gpr, csr;
-  char indCsr, indGpr, regs;
-  csr = tokens[(*tokenCnt)++].getText();
+
+void Asembler::handle1csr1gpr(int* tokenCnt, char* csr, char* gpr){
+  string s1, s2;
+  s1 = tokens[(*tokenCnt)++].getText();
   (*tokenCnt)++; // pojedi zapetu
-  gpr = tokens[(*tokenCnt)++].getText();
-  indCsr = csrIndex(csr);
-  indGpr = gprIndex(gpr);
-  regs = ((indGpr << 4) | (0x0f & indCsr));
-  *(charr+1) = regs;
+  s2 = tokens[(*tokenCnt)++].getText();
+  *csr = csrIndex(s1);
+  *gpr = gprIndex(s2);
 }
 
 bool Asembler::handleGlobal(int* tokenCnt){
@@ -633,7 +584,7 @@ bool Asembler::handleWord(int* tokenCnt, char* charr){
         if(s->isAbsolute()) {
           val = s->getValue();
         } else {
-          addRelocationABS(s, 0);
+          addRelocationABS(s, getCounter());
           val = 0;
         }
       }
@@ -673,4 +624,268 @@ void Asembler::skipToNewLine(int* tokenCnt){
   while(nextToken.getType() != TokenType::EOL){
     nextToken = tokens[(*tokenCnt)++];
   }
+}
+
+void Asembler::writeInstruction(char* charr, char opcode, char a, char b, char c, uint16_t d){
+  *(charr+0) = opcode;
+  *(charr+1) = a << 4 | (b & 0x0F);
+  *(charr+2) = (c << 4) | ((d >> 8) & 0x0F); //c, d1
+  *(charr+3) = d & 0x00FF; //d2, d3
+  write(charr, INSTRUCTION_SIZE);
+}
+
+void Asembler::handlePush(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::PUSH);
+  string gpr = tokens[(*tokenCnt)++].getText();
+  writeInstruction(charr, opcode, 14, 0, gprIndex(gpr), 0xFFFC);
+}
+
+void Asembler::handlePop(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::POP);
+  string gpr = tokens[(*tokenCnt)++].getText();
+  writeInstruction(charr, opcode, gprIndex(gpr), 14, 0, 0x0004);
+}
+
+void Asembler::handleRet(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::RET);
+  writeInstruction(charr, opcode, 15, 14, 0, 0x0004);
+}
+
+bool Asembler::handleCall(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::CALL);
+  writeInstruction(charr, opcode, 15, 0, 0, 0);
+  return handleOperand(tokenCnt, -2); 
+}
+
+bool Asembler::handleJmp(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::JMP);
+  writeInstruction(charr, opcode, 15, 0, 0, 0);
+  return handleOperand(tokenCnt, -2);
+}
+
+bool Asembler::handleBeq(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::BEQ);
+  string gpr1, gpr2;
+  char b, c;
+  gpr1 = tokens[(*tokenCnt)++].getText();
+  (*tokenCnt)++; // pojedi zapetu
+  gpr2 = tokens[(*tokenCnt)++].getText();
+  b = gprIndex(gpr1);
+  c = gprIndex(gpr2);
+  (*tokenCnt)++; // pojedi zapetu
+  writeInstruction(charr, opcode, 15, b, c, 0);
+  return handleOperand(tokenCnt, -2);
+}
+
+bool Asembler::handleBne(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::BNE);
+  string gpr1, gpr2;
+  char b, c;
+  gpr1 = tokens[(*tokenCnt)++].getText();
+  (*tokenCnt)++; // pojedi zapetu
+  gpr2 = tokens[(*tokenCnt)++].getText();
+  b = gprIndex(gpr1);
+  c = gprIndex(gpr2);
+  (*tokenCnt)++; // pojedi zapetu
+  writeInstruction(charr, opcode, 15, b, c, 0);
+  return handleOperand(tokenCnt,  -2);
+}
+
+bool Asembler::handleBgt(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::BGT);
+  string gpr1, gpr2;
+  char b, c;
+  gpr1 = tokens[(*tokenCnt)++].getText();
+  (*tokenCnt)++; // pojedi zapetu
+  gpr2 = tokens[(*tokenCnt)++].getText();
+  b = gprIndex(gpr1);
+  c = gprIndex(gpr2);
+  (*tokenCnt)++; // pojedi zapetu
+  writeInstruction(charr, opcode, 15, b, c, 0);
+  return handleOperand(tokenCnt, -2);
+}
+
+void Asembler::handleXchg(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::XCHG);
+  char b, c;
+  handle2gpr(tokenCnt, &b, &c);
+  writeInstruction(charr, opcode, 0, b, c, 0);
+}
+
+void Asembler::handleAdd(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::ADD);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleSub(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::SUB);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleMul(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::MUL);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleDiv(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::DIV);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleNot(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::SUB);
+  char a, b;
+  handle1gpr(tokenCnt, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, 0, 0);
+}
+
+void Asembler::handleAnd(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::AND);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleOr(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::OR);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleXor(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::XOR);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+void Asembler::handleShl(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::SHL);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);  
+}
+
+void Asembler::handleShr(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::SHR);
+  char a, b, c;
+  handle2gpr(tokenCnt, &c, &b);
+  a = b;
+  writeInstruction(charr, opcode, a, b, c, 0);
+}
+
+bool Asembler::handleLdmemdir(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::LDMEMDIR);
+  bool status = handleOperand(tokenCnt, 2);
+  (*tokenCnt)++; // pojedi zapetu
+  char a;
+  handle1gpr(tokenCnt, &a);
+  writeInstruction(charr, opcode, a, 15, 0, 0);
+  //sada moramo da pristupimo memoriji na koju pokazuje podatak u a
+  opcode = Token::getOPCodeBinary(TokenType::LDREGIND);
+  char b = a;
+  writeInstruction(charr, opcode, a, b, 0, 0);
+  return status;
+}
+
+void Asembler::handleLdregdir(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::LDREGDIR);
+  char a, b;
+  handle2gpr(tokenCnt, &b, &a);
+  writeInstruction(charr, opcode, a, b, 0, 0);
+}
+
+void Asembler::handleLdregind(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::LDREGIND);
+  char a, b;
+  handle1indir1gpr(tokenCnt, &b, &a);
+  writeInstruction(charr, opcode, a, b, 0, 0);
+}
+
+bool Asembler::handleLdregindadd(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::LDREGINDADD);
+  char a, b;
+  uint16_t disp;
+  bool status = handle1indirAddend1gpr(tokenCnt, &b, &a, &disp);
+  writeInstruction(charr, opcode, a, b, 0, disp);
+  return status;
+}
+
+bool Asembler::handleLdimmed(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::LDIMMED);
+  string symbolOnly = tokens[*tokenCnt].getText(); //skini $
+  symbolOnly = symbolOnly.substr(1);
+  tokens[*tokenCnt].setText(symbolOnly);
+  bool status = handleOperand(tokenCnt, 2);
+  (*tokenCnt)++; // pojedi zapetu
+  char a;
+  handle1gpr(tokenCnt, &a);
+  writeInstruction(charr, opcode, a, 15, 0, 0);
+  return status;
+}
+
+bool Asembler::handleStmemdir(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::STMEMDIR);
+  char c;
+  handle1gpr(tokenCnt, &c);
+  (*tokenCnt)++; // pojedi zapetu
+  bool status = handleOperand(tokenCnt, 2);
+  writeInstruction(charr, opcode, 0, 15, c, 0);
+  return status;
+}
+
+void Asembler::handleStregdir(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::STREGDIR);
+  char a, b;
+  handle2gpr(tokenCnt, &b, &a);
+  writeInstruction(charr, opcode, a, b, 0, 0);
+}
+
+void Asembler::handleStregind(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::STREGIND);
+  char b, c;
+  handle1gpr1indir(tokenCnt, &c, &b);
+  writeInstruction(charr, opcode, 0, b, c, 0);
+}
+
+bool Asembler::handleStregindadd(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::STREGINDADD);
+  char b, c;
+  uint16_t disp;
+  bool status = handle1gpr1indirAddend(tokenCnt, &c, &b, &disp);
+  writeInstruction(charr, opcode, 0, b, c, disp);
+  return status;
+}
+
+
+void Asembler::handleCsrrd(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::CSRRD);
+  char a, b;
+  handle1csr1gpr(tokenCnt, &b, &a);
+  writeInstruction(charr, opcode, a, b, 0, 0);
+}
+
+void Asembler::handleCsrwr(int* tokenCnt, char* charr){
+  char opcode = Token::getOPCodeBinary(TokenType::CSRWR);
+  char a, b;
+  handle1gpr1csr(tokenCnt, &b, &a);
+  writeInstruction(charr, opcode, a, b, 0, 0);
 }

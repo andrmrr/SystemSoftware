@@ -6,7 +6,11 @@ Linker::Linker(vector<string> ifnames, bool is_hex, vector<string> places, strin
   this->hex_output = is_hex;
   this->section_places = places;
   if(of.empty()){
-      this->output_file_name = "output.txt";
+    if(is_hex){
+      this->output_file_name = "output.hex";
+    } else {
+      this->output_file_name = "output.o";
+    }
   } else {
     this->output_file_name = of;
   }
@@ -37,8 +41,8 @@ void Linker::linkHex(){
   load();
   setSectionAdresses();
   solveRelocations();
-  hexOutputTxt();
-  // hexOutput();
+  // hexOutputTxt();
+  hexOutput();
 }
 
 void Linker::linkRel(){

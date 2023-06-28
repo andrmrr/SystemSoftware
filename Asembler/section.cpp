@@ -16,6 +16,10 @@ vector<char> Section::getData(){
   return this->data;
 }
 
+void Section::setData(vector<char> newData){
+  this->data = newData;
+}
+
 Symbol* Section::getSectionSymbol(){
   return this->sectionSymbol;
 }

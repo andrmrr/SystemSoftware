@@ -11,6 +11,7 @@
     "utility": "cpp",
     "iomanip": "cpp",
     "iosfwd": "cpp",
-    "*.tcc": "cpp"
+    "*.tcc": "cpp",
+    "random": "cpp"
   }
 }

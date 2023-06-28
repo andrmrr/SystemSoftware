@@ -1,0 +1,20 @@
+Relocatable object file
+
+Symbol Table
+Num  Value    Size   Type  Bind  Ndx  Name
+2:   00000000   38   SCTN   LOC    2  sekcija
+
+.sekcija
+00 00 00 00 10 00 00 00 
+39 f1 20 30 3a f7 80 2c 
+3b fa b0 28 00 00 00 00 
+11 00 00 00 81 e0 3f fc 
+93 ee 00 04 93 fe 00 04 
+21 f0 00 0c 00 00 00 00 
+38 f0 00 0c 21 f0 00 08 
+00 01 00 00 8a ff 78 dd 
+00 00 00 00 
+
+.rela.sekcija
+Offset    Type              Symbol   Addend
+00000040   R_X86_64_32   sekcija     8

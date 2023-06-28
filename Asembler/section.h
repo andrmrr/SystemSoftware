@@ -16,5 +16,6 @@ class Section{
   friend class SectionTable;
 public:
   vector<char> getData();
+  void setData(vector<char> newData);
   Symbol* getSectionSymbol();
 };

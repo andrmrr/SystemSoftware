@@ -51,7 +51,6 @@ public:
   void setSectionAdresses();
   void solveRelocations();
   void hexOutput();
-  void hexOutputTxt();
   //functions for relocatable output
   void fixRelocations();
   void relOutputTxt();

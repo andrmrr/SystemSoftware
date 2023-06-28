@@ -72,112 +72,112 @@ void Asembler::firstPass(){
         break;
       case TokenType::HALT:
         syntaxError = check0(&tokenCnt) ? false : true;
-        incCounter(1); // opcode
+        incCounter(INSTRUCTION_SIZE);
         // cout << "halt dobar!" << endl;
         break;
       case TokenType::INT:
         syntaxError = check0(&tokenCnt) ? false : true;
-        incCounter(1); // opcode
+        incCounter(INSTRUCTION_SIZE);
         // cout << "int dobar!" << endl;
         break;
       case TokenType::IRET:
         syntaxError = check0(&tokenCnt) ? false : true;
-        incCounter(1); // opcode
+        incCounter(INSTRUCTION_SIZE);
         // cout << "iret dobar!" << endl;
         break;
       case TokenType::CALL: 
         syntaxError = check1boperand(&tokenCnt) ? false : true;
-        incCounter(5); // opcode-op[0]-op[1]-op[2]-op[3]
+        incCounter(INSTRUCTION_SIZE);
         // cout << "call dobar!" << endl;
         break;
       case TokenType::RET:
         syntaxError = check0(&tokenCnt) ? false : true;
-        incCounter(1); // opcode
+        incCounter(INSTRUCTION_SIZE);
         // cout << "ret dobar!" << endl;
         break;
       case TokenType::JMP: 
         syntaxError = check1boperand(&tokenCnt) ? false : true;
-        incCounter(5);  // opcode-op[0]-op[1]-op[2]-op[3]
+        incCounter(INSTRUCTION_SIZE);
         // cout << "jmp dobar!" << endl;
         break;
       case TokenType::BEQ: 
         syntaxError = check2gpr1boperand(&tokenCnt) ? false : true;
-        incCounter(6); // opcode-(gpr1gpr2)-op[0]-op[1]-op[2]-op[3]
+        incCounter(INSTRUCTION_SIZE);
         // cout << "beq dobar!" << endl;
         break;
       case TokenType::BNE:
         syntaxError = check2gpr1boperand(&tokenCnt) ? false : true;
-        incCounter(6); // opcode-(gpr1gpr2)-op[0]-op[1]-op[2]-op[3]
+        incCounter(INSTRUCTION_SIZE);
         // cout << "bne dobar!" << endl;
         break;
       case TokenType::BGT:
         syntaxError = check2gpr1boperand(&tokenCnt) ? false : true;
-        incCounter(6); // opcode-(gpr1gpr2)-op[0]-op[1]-op[2]-op[3]
+        incCounter(INSTRUCTION_SIZE);
         // cout << "bgt dobar!" << endl;
         break;
       case TokenType::PUSH:
         syntaxError = check1gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(0x0gpr)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "push dobar!" << endl;
         break;
       case TokenType::POP:
         syntaxError = check1gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(0x0gpr)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "pop dobar!" << endl;
         break;
       case TokenType::XCHG:
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "xchg dobar!" << endl;
         break;
       case TokenType::ADD:
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "add dobar!" << endl;
         break;
       case TokenType::SUB:
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "sub dobar!" << endl;
         break;
       case TokenType::MUL: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "mul dobar!" << endl;
         break;
       case TokenType::DIV: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "div dobar!" << endl;
         break;
       case TokenType::NOT: 
         syntaxError = check1gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(0x0gpr)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "not dobar!" << endl;
         break;
       case TokenType::AND: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "and dobar!" << endl;
         break;
       case TokenType::OR: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "or dobar!" << endl;
         break;
       case TokenType::XOR: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "xor dobar!" << endl;
         break;
       case TokenType::SHL: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "shl dobar!" << endl;
         break;
       case TokenType::SHR: 
         syntaxError = check2gpr(&tokenCnt) ? false : true;
-        incCounter(2); // opcode-(gprDgprS)
+        incCounter(INSTRUCTION_SIZE);
         // cout << "shr dobar!" << endl;
         break;
       case TokenType::LD: 
@@ -185,21 +185,18 @@ void Asembler::firstPass(){
         temp = check1doperand1gpr(&tokenCnt);
         syntaxError = (temp == -1);
         if(!syntaxError){
+          incCounter(INSTRUCTION_SIZE);
           if(temp == 0) {
             tokens[opCodeIndex].setType(TokenType::LDMEMDIR); // opcode-(0x0gprD)-op[0]-op[1]-op[2]-op[3]
-            incCounter(6);
+            incCounter(INSTRUCTION_SIZE); // ovo se prevodi sa dve instrukcije (ldimmed, pa regind)
           } else if(temp == 1) {
             tokens[opCodeIndex].setType(TokenType::LDREGDIR); // opcode-(gprDgprS)
-            incCounter(2);
           } else if(temp == 2) {
             tokens[opCodeIndex].setType(TokenType::LDREGIND); // opcode-(gprDgprS)
-            incCounter(2);
           } else if(temp == 3) {
             tokens[opCodeIndex].setType(TokenType::LDREGINDADD); // opcode-(gprDgprS)-op[0]-op[1]
-            incCounter(4);
           } else {
             tokens[opCodeIndex].setType(TokenType::LDIMMED); // opcode-(0x0gprD)-op[0]-op[1]-op[2]-op[3]
-            incCounter(6);
           }
         }
         // cout << "ld dobar!" << endl;
@@ -209,30 +206,27 @@ void Asembler::firstPass(){
         temp = check1gpr1doperand(&tokenCnt);
         syntaxError = (temp == -1);
         if(!syntaxError){
+          incCounter(INSTRUCTION_SIZE);
           if(temp == 0) {
             tokens[opCodeIndex].setType(TokenType::STMEMDIR); // opcode-(0x0gprD)-op[0]-op[1]-op[2]-op[3]
-            incCounter(6);
           } else if(temp == 1) {
             tokens[opCodeIndex].setType(TokenType::STREGDIR);  // opcode-(gprDgprS)
-            incCounter(2);
           } else if(temp == 2) {
             tokens[opCodeIndex].setType(TokenType::STREGIND); // opcode-(gprDgprS)
-            incCounter(2);
           } else {
             tokens[opCodeIndex].setType(TokenType::STREGINDADD); // opcode-(gprDgprS)-op[0]-op[1]
-            incCounter(4);
           }
         }
         // cout << "st dobar!" << endl;
         break;
       case TokenType::CSRRD:  
         syntaxError = check1csr1gpr(&tokenCnt) ? false : true; // opcode-(gprDcsrS)
-        incCounter(2);
+        incCounter(INSTRUCTION_SIZE);
         // cout << "csrrd dobar!" << endl;
         break;
       case TokenType::CSRWR: 
         syntaxError = check1gpr1csr(&tokenCnt) ? false : true; // opcode-(csrDgprS)
-        incCounter(2);
+        incCounter(INSTRUCTION_SIZE);
         // cout << "csrwr dobar!" << endl;
         break;
       case TokenType::LABEL:
