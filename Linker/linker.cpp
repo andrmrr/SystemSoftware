@@ -364,7 +364,7 @@ void Linker::setSectionAdresses(){
     cantfit = true;
     delim = it->find('@');
     secName = it->substr(0, delim);
-    addr = stoul(it->substr(delim+1));
+    addr = hexStringToUInt32(it->substr(delim+1), true);
     sec = secTable->findSection(symbolTable->findSymbol(secName));
     size = sec->getTotalSize();
     sec->setAddress(addr);
@@ -450,4 +450,71 @@ void Linker::fixRelocations(){
     }
   }
   // cout << "Relocations fixed..." << endl;
+}
+
+uint32_t Linker::hexStringToUInt32(string hex, bool prefix){
+  uint32_t val = 0;
+  char current;
+  int i = (prefix) ? 2 : 0;
+  for(i; i < hex.size(); i++){
+    current = hex[i];
+    val *= 16;
+    switch(current){
+      case '0':
+        val += 0;
+        break;
+      case '1':
+        val += 1;
+        break;
+      case '2':
+        val += 2;
+        break;
+      case '3':
+        val += 3;
+        break;
+      case '4':
+        val += 4;
+        break;
+      case '5':
+        val += 5;
+        break;
+      case '6':
+        val += 6;
+        break;
+      case '7':
+        val += 7;
+        break;
+      case '8':
+        val += 8;
+        break;
+      case '9':
+        val += 9;
+        break;
+      case 'a':
+      case 'A':
+        val += 10;
+        break;
+      case 'b':
+      case 'B':
+        val += 11;
+        break;
+      case 'c':
+      case 'C':
+        val += 12;
+        break;
+      case 'd':
+      case 'D':
+        val += 13;
+        break;
+      case 'e':
+      case 'E':
+        val += 14;
+        break;
+      case 'f':
+      case 'F':
+        val += 15;
+        break;  
+    }
+  }
+  return val;
 }

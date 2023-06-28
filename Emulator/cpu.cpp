@@ -1,19 +1,27 @@
 #include "cpu.h"
 
 CPU::CPU(){
-
+  reset();
 }
 
 CPU::~CPU(){
 
 }
 
+void CPU::reset(){
+  gpr[15] = 0x40000000;
+  gpr[14] = 0xF0000000;
+  memory = map<uint32_t, Word>();
+  state = CPU::finished;
+}
+
 void CPU::loadMemory(string ifName){
   ifstream inputFile(ifName);
   char* charr = (char*)calloc(100, sizeof(char));
-  string line, saddr;
   vector<string> parts;
+  string line, saddr;
   uint32_t addr;
+  Word data;
 
   inputFile.getline(charr, 100);   
   while(!inputFile.eof()){
@@ -24,15 +32,30 @@ void CPU::loadMemory(string ifName){
     saddr = parts.front();
     addr = hexStringToUInt32(saddr.substr(0, saddr.size()-1), false);
     parts.erase(parts.begin());
-    for(auto it = parts.begin(); it != parts.end(); it++){
-      writeByte(addr++, hexStringToUInt32((*it), false));
+
+    if(parts.size() % 4 != 0){
+      for(int i = parts.size(); i % 8 != 0; i ++){
+        parts.push_back("00");
+      }
+    }
+
+    data = 0;
+    for(int i = 0; i < parts.size(); i++){
+      int pos = 4 - (i % 4) - 1; 
+      data |=  hexStringToUInt32((parts[i]), false) << (pos*8);
+      if(i > 0 && i % 4 == 3){
+        writeWord(addr, data);
+        addr += 4;
+        data = 0;
+      }
     }
     inputFile.getline(charr, 100);
   }
 
   free(charr);
+  ofstream log("log.txt");
   for(auto it = memory.begin(); it != memory.end(); it++){
-      cout << it->first << " " << (int)it->second << endl;
+      log << setfill('0') << setw(8) << hex << it->first << " " << setw(8) << (int)it->second << endl;
     }
 }
 
@@ -48,12 +71,26 @@ vector<string> CPU::split(const string line, char delim) {
   return tokens;
 }
 
-void CPU::writeByte(uint32_t addr, Byte b){
-  memory.insert(pair<uint32_t, Byte>(addr, b));
+void CPU::writeWord(uint32_t addr, Word w){
+  memory[addr] = w;
 }
 
-Byte CPU::readByte(uint32_t addr){
+Word CPU::readWord(uint32_t addr){
   return memory[addr]; 
+}
+
+void CPU::print(){
+  cout << "--------------------------------------------------------------------" << endl;
+  cout << "Emulated processor executed halt instruction" << endl;
+  cout << "Emulated processor state:" << endl;
+  for(int i = 0; i < 4; i ++){
+    for(int j = 0; j < 4; j ++){
+      int pos = i*4 + j;
+      if(pos <= 9) cout << " ";
+      cout << "r" << pos << "=0x" << setfill('0') << setw(8) << gpr[pos] << "    ";
+    }
+    cout << endl;
+  }
 }
 
 uint32_t CPU::hexStringToUInt32(string hex, bool prefix){

@@ -2,13 +2,13 @@ Relocatable object file
 
 Symbol Table
 Num  Value    Size   Type  Bind  Ndx  Name
-2:   00000000    e   SCTN   LOC    2  nepoznata
-3:   00000000    0  NOTYP  GLOB  UND  nz
+2:   00000000    0  NOTYP  GLOB  UND  nz
+3:   00000000    c   SCTN   LOC    3  nepoznata
 
 .nepoznata
-90 01 00 01 00 00 7f 07 
-00 00 00 00 00 00 
+82 0f 10 08 7f 07 00 00 
+00 00 00 00 00 01 00 00 
 
 .rela.nepoznata
 Offset    Type              Symbol   Addend
-0000000a   R_X86_64_32        nz     0
+00000008   R_X86_64_32        nz     0

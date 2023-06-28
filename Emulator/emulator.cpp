@@ -11,4 +11,6 @@ Emulator::~Emulator(){
 
 void Emulator::emulate(){
   cpu->loadMemory(inputFileName);
+  cpu->run();
+  cpu->print();
 }

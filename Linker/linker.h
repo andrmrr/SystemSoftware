@@ -60,4 +60,5 @@ public:
   int getSectionOffset(Symbol* s, string file);
   vector<RelocationTable*> getSimilarRelTables(string secName);
   int numRels();
+  uint32_t hexStringToUInt32(string hex, bool prefix);
 };

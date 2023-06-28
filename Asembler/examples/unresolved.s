@@ -1,4 +1,4 @@
-.global nz
+.extern nz
 
 .section nepoznata
 st %r1, 0x100

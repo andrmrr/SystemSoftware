@@ -3,34 +3,39 @@ Relocatable object file
 Symbol Table
 Num  Value    Size   Type  Bind  Ndx  Name
 3:   00000011    0  NOTYP  GLOB    1  bb
-4:   00000000    c   SCTN   LOC    4  prva
-6:   00000000   1b   SCTN   LOC    6  druga
-7:   00000019    0  NOTYP  GLOB    6  f
-8:   0000001a    0  NOTYP  GLOB    6  d
-9:   00000000   1f   SCTN   LOC    9  trecaa
-a:   00000000    a   SCTN   LOC   10  skokovi
+4:   00000000   14   SCTN   LOC    4  prva
+6:   00000000   28   SCTN   LOC    6  druga
+7:   00000020    0  NOTYP  GLOB    6  f
+8:   00000024    0  NOTYP  GLOB    6  d
+9:   00000000   24   SCTN   LOC    9  trecaa
+a:   00000000    c   SCTN   LOC   10  skokovi
 
 .prva
-01 00 00 00 60 0f a0 0f 
-a1 11 a1 02 
+01 00 00 00 51 ff 00 00 
+94 0f 00 00 90 11 00 00 
+90 02 00 00 
 .druga
-02 00 00 00 83 21 00 01 
-82 55 84 00 00 00 00 00 
-80 05 10 0f 00 00 81 f1 
-21 00 10 
+02 00 00 00 92 21 01 00 
+92 55 00 00 92 0f 00 1c 
+92 5f 00 14 92 55 00 00 
+91 f1 00 00 93 fe 00 04 
+00 00 00 00 10 00 00 00 
+10 0f 00 00 00 00 00 00 
 .trecaa
-03 00 00 00 92 56 90 05 
-00 00 00 00 91 f1 93 12 
-1f 00 80 0f 11 00 00 00 
-21 31 f1 00 00 00 00 
+03 00 00 00 80 05 60 00 
+82 0f 00 20 91 f1 00 00 
+80 01 20 1f 92 ff 00 0c 
+92 ff 00 00 93 fe 00 04 
+39 f1 00 04 11 00 00 00 
+00 00 00 00 00 00 00 00 
 .skokovi
-05 00 00 00 30 00 00 0f 
-00 00 
+05 00 00 00 38 f0 00 04 
+00 00 00 00 00 00 0f 00 
 
 .rela.druga
 Offset    Type              Symbol   Addend
-0000000c   R_X86_64_32         f     0
+0000002c   R_X86_64_32         f     0
 .rela.trecaa
 Offset    Type              Symbol   Addend
-00000008   R_X86_64_32         f     0
-0000001b   R_X86_64_32      prva     c
+00000028   R_X86_64_32      prva    14
+0000002c   R_X86_64_32         f     0
